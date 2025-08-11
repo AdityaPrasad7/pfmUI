@@ -98,39 +98,37 @@ const LiveOrders: React.FC = () => {
     if (!isManager) return; // Only manager creates orders
 
     const interval = setInterval(() => {
-      const random = Math.random();
-      if (random < 0.3) { // 30% chance every 10 seconds for testing
-        const newOrder: Order = {
-          id: `PCC-${Math.floor(Math.random() * 90000) + 10000}`,
-          items: Math.floor(Math.random() * 5) + 1,
-          total: Math.floor(Math.random() * 1000) + 100,
-          time: new Date().toLocaleTimeString('en-US', {
-            hour: '2-digit',
-            minute: '2-digit',
-            hour12: true
-          }),
-          status: 'new'
-        };
-        
-        setOrders(prev => {
-          const updatedOrders = [newOrder, ...prev];
-          // Save to localStorage
-          localStorage.setItem('liveOrders', JSON.stringify(updatedOrders));
-          return updatedOrders;
-        });
-        
-        // Emit new order to store TV screen
-        const orderData = {
-          ...newOrder,
-          storeId: 'indiranagar-center',
-          storeName: 'Priya Chicken - Indiranagar',
-          timestamp: new Date().toISOString()
-        };
-        
-        socketService.emitNewOrder(orderData);
-        console.log('📤 Manager emitted new order to store:', newOrder.id);
-      }
-    }, 10000); // Check every 10 seconds
+      // 100% chance every 5 seconds for quick order generation
+      const newOrder: Order = {
+        id: `PCC-${Math.floor(Math.random() * 90000) + 10000}`,
+        items: Math.floor(Math.random() * 5) + 1,
+        total: Math.floor(Math.random() * 1000) + 100,
+        time: new Date().toLocaleTimeString('en-US', {
+          hour: '2-digit',
+          minute: '2-digit',
+          hour12: true
+        }),
+        status: 'new'
+      };
+      
+      setOrders(prev => {
+        const updatedOrders = [newOrder, ...prev];
+        // Save to localStorage
+        localStorage.setItem('liveOrders', JSON.stringify(updatedOrders));
+        return updatedOrders;
+      });
+      
+      // Emit new order to store TV screen
+      const orderData = {
+        ...newOrder,
+        storeId: 'indiranagar-center',
+        storeName: 'Priya Chicken - Indiranagar',
+        timestamp: new Date().toISOString()
+      };
+      
+      socketService.emitNewOrder(orderData);
+      console.log('📤 Manager emitted new order to store:', newOrder.id);
+    }, 5000); // Check every 5 seconds instead of 10 seconds
 
     return () => clearInterval(interval);
   }, [isManager]);
@@ -402,7 +400,7 @@ const LiveOrders: React.FC = () => {
               <div className="bg-gray-100 p-6 rounded-lg mb-4">
                 <div className="flex justify-center mb-4">
                   <svg className="w-24 h-24 text-gray-700" fill="currentColor" viewBox="0 0 24 24">
-                    <path d="M3 3h6v6H3V3zm2 2v2h2V5H5zm8-2h6v6h-6V3zm2 2v2h2V5h-2zM3 11h6v6H3v-6zm2 2v2h2v-2H5zm13-2h-1v2h2v-1h-1zm-2 2h2v2h-2v-2zm2 2h2v2h-2v-2zm-2 2h-2v2h2v-2zm-2-2h-2v2h2v-2zm2-2h2v2h-2v-2zm-2-2h-2v2h2v-2zm2-2h2v2h-2v-2zm-2-2h-2v2h2v-2zm2-2h2v2h-2V9zm-2-2h-2v2h2V7zm2-2h2v2h-2V5zm-2-2h-2v2h2V3z"/>
+                    <path d="M3 3h6v6H3V3zm2 2v2h2V5H5zm8-2h6v6h-6V3zm2 2v2h2V5h-2zM3 11h6v6H3v-6zm2 2v2h2v-2H5zm13-2H4v-4a1 1 0 011-1h14a1 1 0 011 1v4zM17 3H7v3h10V3z" />
                   </svg>
                 </div>
                 <div className="text-sm text-gray-600 font-mono whitespace-pre-line">
