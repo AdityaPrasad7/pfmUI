@@ -6,6 +6,7 @@ import IconEye from '../../../components/Icon/IconEye';
 import IconTrash from '../../../components/Icon/IconTrash';
 import IconSquareCheck from '../../../components/Icon/IconSquareCheck';
 import IconTxtFile from '../../../components/Icon/IconTxtFile';
+import IconPencil from '../../../components/Icon/IconPencil';
 import CustomTable from '../../../components/CustomTable';
 
 interface DeliveryPartner {
@@ -72,6 +73,10 @@ const DeliveryPartnerList: React.FC = () => {
 
     const handleViewPartner = (partner: DeliveryPartner) => {
         navigate(`/manager/delivery-partner/details/${partner.id}`);
+    };
+
+    const handleEditPartner = (partner: DeliveryPartner) => {
+        navigate(`/manager/delivery-partner/edit/${partner.id}`);
     };
 
     return (
@@ -172,6 +177,13 @@ const DeliveryPartnerList: React.FC = () => {
                                     title="View Details"
                                 >
                                     <IconEye className="w-4 h-4" />
+                                </button>
+                                <button
+                                    onClick={() => handleEditPartner(partner)}
+                                    className="p-1 text-purple-600 hover:text-purple-800 hover:bg-purple-50 rounded transition-colors"
+                                    title="Edit Partner"
+                                >
+                                    <IconPencil className="w-4 h-4" />
                                 </button>
                                 <button
                                     onClick={() => handleDeletePartner(partner.id)}
