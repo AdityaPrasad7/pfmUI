@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import storeloginimg from "../assets/login-image/storeloginImg.jpg";
 
 interface LoginForm {
   phone: string;
@@ -96,7 +97,7 @@ const StoreLogin = () => {
       <div 
         className="absolute inset-0 bg-cover bg-right bg-no-repeat"
         style={{
-          backgroundImage: `url(${import.meta.env.BASE_URL}src/assets/login-image/storeloginimg.jpg)`,
+          backgroundImage: `url(${storeloginimg})`,
           filter: 'brightness(0.8) contrast(1.1)'
         }}
       />

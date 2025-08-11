@@ -1,9 +1,10 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import adminloginimg from "../assets/login-image/adminloginImg.jpg";
 
 const AdminLogin = () => {
   const navigate = useNavigate();
-  
+
   // Check if user is already logged in
   useEffect(() => {
     const user = JSON.parse(localStorage.getItem('superAdminUser') || '{}');
@@ -53,31 +54,32 @@ const AdminLogin = () => {
         name: 'Super Admin',
         loginTime: new Date().toISOString()
       };
-      
+
       localStorage.setItem('superAdminUser', JSON.stringify(userData));
       navigate('/super-admin');
     } else {
       setError('Invalid admin credentials');
       triggerErrorAnimation();
     }
-    
+
     setIsLoading(false);
   };
 
   return (
     <div className="min-h-screen flex items-center justify-center p-4 relative overflow-hidden">
       {/* Background Image */}
-      <div 
+      <div
         className="absolute inset-0 bg-cover bg-center bg-no-repeat"
         style={{
-          backgroundImage: `url(${import.meta.env.BASE_URL}src/assets/login-image/adminloginimg.jpg)`,
+          backgroundImage: `url(${adminloginimg})`,
           filter: 'brightness(0.6) contrast(1.1)'
         }}
       />
-      
+
+
       {/* Overlay for better text readability */}
       <div className="absolute inset-0 bg-black bg-opacity-20" />
-      
+
       {/* Content Container */}
       <div className={`bg-white/30 backdrop-blur-sm rounded-2xl shadow-2xl overflow-hidden w-full max-w-md transition-all duration-300 ${shake ? 'animate-shake' : ''} relative z-10 border border-white/30`}>
         {/* Header */}
@@ -100,12 +102,12 @@ const AdminLogin = () => {
                   type="email"
                   value={formData.email}
                   onChange={(e) => handleInputChange('email', e.target.value)}
-                  className="w-full px-4 py-3.5 border-2 border-white/30 rounded-xl focus:ring-2 focus:ring-amber-500 focus:border-amber-500 transition-all duration-300 pr-10 bg-white backdrop-blur-sm group-hover:bg-white group-hover:border-white/50"
+                  className="w-full px-4 py-3.5 border-2 border-white/30 rounded-xl focus:ring-2 focus:ring-red-500 focus:border-red-500 transition-all duration-300 pr-10 bg-white backdrop-blur-sm group-hover:bg-white group-hover:border-white/50"
                   placeholder="admin@priyafreshmeats.com"
                   required
                 />
                 <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
-                  <svg className="h-5 w-5 text-gray-600 group-focus-within:text-amber-500 transition-colors" fill="currentColor" viewBox="0 0 20 20">
+                  <svg className="h-5 w-5 text-gray-600 group-focus-within:text-red-500 transition-colors" fill="currentColor" viewBox="0 0 20 20">
                     <path d="M2.003 5.884L10 9.882l7.997-3.998A2 2 0 0016 4H4a2 2 0 00-1.997 1.884z" />
                     <path d="M18 8.118l-8 4-8-4V14a2 2 0 002 2h12a2 2 0 002-2V8.118z" />
                   </svg>
@@ -122,7 +124,7 @@ const AdminLogin = () => {
                   type={isPasswordVisible ? "text" : "password"}
                   value={formData.password}
                   onChange={(e) => handleInputChange('password', e.target.value)}
-                  className="w-full px-4 py-3.5 border-2 border-white/30 rounded-xl focus:ring-2 focus:ring-amber-500 focus:border-amber-500 transition-all duration-300 pr-10 bg-white backdrop-blur-sm group-hover:bg-white group-hover:border-white/50"
+                  className="w-full px-4 py-3.5 border-2 border-white/30 rounded-xl focus:ring-2 focus:ring-red-500 focus:border-red-500 transition-all duration-300 pr-10 bg-white backdrop-blur-sm group-hover:bg-white group-hover:border-white/50"
                   placeholder="••••••••"
                   required
                 />
@@ -157,11 +159,10 @@ const AdminLogin = () => {
             <button
               type="submit"
               disabled={isLoading}
-              className={`w-full py-3.5 px-4 rounded-xl font-semibold text-white transition-all duration-300 ${
-                isLoading 
-                  ? 'bg-amber-400 cursor-not-allowed'
-                  : 'bg-gradient-to-r from-amber-600 to-orange-600 hover:from-amber-700 hover:to-orange-700 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5'
-              } flex items-center justify-center`}
+              className={`w-full py-3.5 px-4 rounded-xl font-semibold text-white transition-all duration-300 ${isLoading
+                  ? 'bg-red-400 cursor-not-allowed'
+                  : 'bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5'
+                } flex items-center justify-center`}
             >
               {isLoading ? (
                 <>
@@ -187,10 +188,10 @@ const AdminLogin = () => {
             <div className="flex items-center justify-between mb-3">
               <h4 className="text-sm font-semibold text-gray-800">Admin Credentials</h4>
             </div>
-            <div className="bg-amber-500/20 backdrop-blur-sm p-4 rounded-xl border border-amber-300/30">
+            <div className="bg-red-500/20 backdrop-blur-sm p-4 rounded-xl border border-red-300/30">
               <div className="text-xs text-gray-800 space-y-2">
                 <div className="flex items-start">
-                  <span className="inline-block bg-amber-500/30 text-amber-900 text-xs px-2 py-1 rounded-lg mr-2 font-medium">Admin</span>
+                  <span className="inline-block bg-red-500/30 text-red-900 text-xs px-2 py-1 rounded-lg mr-2 font-medium">Admin</span>
                   <div>
                     <div className="font-medium">admin@priyafreshmeats.com</div>
                     <div className="text-gray-700">admin123</div>
