@@ -9,6 +9,7 @@ import { IconButton, Menu, MenuItem, Card, CardContent, Typography } from '@mui/
 import MoreVertIcon from '@mui/icons-material/MoreVert';
 import NavigateBtn from '../../../components/button/NavigateBtn';
 import AddIcon from '@mui/icons-material/Add';
+import { toast, ToastContainer } from 'react-toastify';
 
 interface CategoryItem {
   id: number;
@@ -50,13 +51,34 @@ const DisplayCategories: React.FC = () => {
     handleClose();
   };
 
-  const handleDelete = () => {
-    console.log('Delete item:', selectedItem);
-    handleClose();
-    // Add your delete logic here
-  };
+const handleDelete = () => {
+  if (!selectedItem) return;
+
+  const confirmDelete = window.confirm(
+    `Are you sure you want to delete "${selectedItem.name}"?`
+  );
+
+  if (!confirmDelete) return;
+
+  console.log('Deleting item:', selectedItem);
+
+  // Show delete success toast
+  toast.success('Product category deleted successfully!', {
+    toastId: 'delete-category-success',
+  });
+
+  // TODO: Add actual delete logic (state update or API call)
+  // Example:
+  // setData((prev) => prev.filter((item) => item.id !== selectedItem.id));
+
+  handleClose();
+};
+
+
 
   return (
+    <>
+     <ToastContainer />
     <div className="p-6">
       <div className="mb-8">
         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-5">
@@ -125,6 +147,7 @@ const DisplayCategories: React.FC = () => {
         </MenuItem>
       </Menu>
     </div>
+     </>
   );
 };
 
