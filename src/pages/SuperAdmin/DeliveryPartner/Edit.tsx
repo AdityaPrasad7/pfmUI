@@ -74,7 +74,7 @@ const DeliveryPartnerEdit: React.FC = () => {
                   <span className="sm:hidden">Back</span>
                 </span>
               }
-              className="text-sm font-medium text-blue-600 hover:text-blue-800"
+              // className="text-sm font-medium text-blue-600 hover:text-blue-800"
             />
           </div>
 

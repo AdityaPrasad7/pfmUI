@@ -1,5 +1,6 @@
 import { lazy } from 'react';
 import type { AppRoute } from './types';
+import NotFoundPage from '../pages/NotFoundPage';
 
 const DeliveryPartner = lazy(() => import('../pages/Manager/DeliveryPartner'));
 const AddPartner = lazy(() => import('../pages/Manager/DeliveryPartner/AddPartner'));
@@ -32,6 +33,11 @@ export const commonRoutes: AppRoute[] = [
   {
     path: '/',
     element: <AdminLogin />,
+    layout: 'blank',
+  },
+    {
+    path: '*', // Catch-all for unknown routes
+    element: <NotFoundPage />,
     layout: 'blank',
   },
   {

@@ -219,7 +219,7 @@ const Notification: React.FC = () => {
               Send Notification
             </h2>
             <NavigateBtn
-              to="/delivery-partner"
+              to="/super-admin"
               label={
                 <span className="flex items-center gap-1">
                   <ArrowBackIcon fontSize="small" />
