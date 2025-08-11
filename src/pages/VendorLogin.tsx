@@ -128,7 +128,7 @@ const StoreLogin = () => {
                   value={formData.phone}
                   onChange={(e) => handleInputChange('phone', e.target.value)}
                   className="w-full px-4 py-3.5 border-2 border-white/30 rounded-xl focus:ring-2 focus:ring-green-700 focus:border-green-700 transition-all duration-300 pr-10 bg-white backdrop-blur-sm group-hover:bg-white group-hover:border-white/50"
-                  placeholder="9876543210"
+                  placeholder="9876543211"
                   required
                   disabled={otpSent}
                 />
@@ -180,7 +180,7 @@ const StoreLogin = () => {
                       value={formData.otp}
                       onChange={(e) => handleInputChange('otp', e.target.value)}
                       className="w-full px-4 py-3.5 border-2 border-white/30 rounded-xl focus:ring-2 focus:ring-green-700 focus:border-green-700 transition-all duration-300 pr-10 bg-white backdrop-blur-sm group-hover:bg-white group-hover:border-white/50"
-                      placeholder="123456"
+                      placeholder="654321"
                       required
                     />
                     <button
