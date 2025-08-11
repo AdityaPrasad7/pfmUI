@@ -91,49 +91,26 @@ const StoreLogin = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-green-50 to-emerald-50 flex items-center justify-center p-4 relative overflow-hidden">
-      {/* Background Icons */}
-      <div className="absolute inset-0 opacity-10">
-        {/* Shopping Cart Icons */}
-        <div className="absolute top-10 left-10 text-6xl text-green-300">🛒</div>
-        <div className="absolute top-32 right-16 text-4xl text-green-200">🛒</div>
-        <div className="absolute bottom-20 left-20 text-5xl text-green-300">🛒</div>
-        <div className="absolute bottom-40 right-10 text-3xl text-green-200">🛒</div>
-        
-        {/* Store Icons */}
-        <div className="absolute top-20 right-1/4 text-4xl text-emerald-300">🏪</div>
-        <div className="absolute top-60 left-1/3 text-5xl text-emerald-200">🏪</div>
-        <div className="absolute bottom-32 right-1/3 text-3xl text-emerald-300">🏪</div>
-        <div className="absolute bottom-10 left-1/4 text-4xl text-emerald-200">🏪</div>
-        
-        {/* Order Icons */}
-        <div className="absolute top-40 right-10 text-3xl text-green-200">📋</div>
-        <div className="absolute bottom-60 left-10 text-4xl text-green-300">📋</div>
-        <div className="absolute top-80 right-1/3 text-3xl text-green-300">📋</div>
-        <div className="absolute bottom-80 left-1/3 text-4xl text-green-200">📋</div>
-        
-        {/* Phone Icons */}
-        <div className="absolute top-24 left-1/3 text-4xl text-emerald-300">📱</div>
-        <div className="absolute bottom-24 right-1/3 text-3xl text-emerald-200">📱</div>
-        <div className="absolute top-70 left-1/6 text-5xl text-emerald-300">📱</div>
-        <div className="absolute bottom-70 right-1/6 text-4xl text-emerald-200">📱</div>
-        
-        {/* Clock Icons */}
-        <div className="absolute top-16 left-1/4 text-5xl text-green-300">⏰</div>
-        <div className="absolute bottom-16 right-1/4 text-4xl text-green-200">⏰</div>
-        <div className="absolute top-50 left-1/2 text-3xl text-green-200">⏰</div>
-        <div className="absolute bottom-50 right-1/2 text-4xl text-green-300">⏰</div>
-      </div>
+    <div className="min-h-screen flex items-center justify-center p-4 relative overflow-hidden">
+      {/* Background Image */}
+      <div 
+        className="absolute inset-0 bg-cover bg-right bg-no-repeat"
+        style={{
+          backgroundImage: `url(${import.meta.env.BASE_URL}src/assets/login-image/storeloginimg.jpg)`,
+          filter: 'brightness(0.8) contrast(1.1)'
+        }}
+      />
       
-      <div className={`bg-white rounded-3xl shadow-2xl overflow-hidden w-full max-w-md transition-all duration-300 ${shake ? 'animate-shake' : ''} relative z-10`}>
-        {/* Gradient Header */}
-        <div className="bg-gradient-to-r from-green-600 to-emerald-600 py-8 px-8 text-white">
-          <div className="flex items-center justify-between">
-            <div>
-              <h1 className="text-3xl font-bold">Store Portal</h1>
-              <p className="text-sm opacity-90 mt-1">Store Operations and Order Processing</p>
-            </div>
-            <div className="text-4xl">🛒</div>
+      {/* Overlay for better text readability */}
+      <div className="absolute inset-0 bg-black bg-opacity-20" />
+      
+      {/* Content Container */}
+      <div className={`bg-white/30 backdrop-blur-xs rounded-2xl shadow-2xl overflow-hidden w-full max-w-md transition-all duration-300 ${shake ? 'animate-shake' : ''} relative z-10 border border-white/30`}>
+        {/* Header */}
+        <div className="py-8 px-8 text-center relative overflow-hidden">
+          <div className="relative z-10">
+            <h1 className="text-3xl font-bold tracking-tight text-white">Store Portal</h1>
+            <p className="text-sm text-white/90 mt-2 font-medium">Store Operations and Order Processing</p>
           </div>
         </div>
 
@@ -141,21 +118,21 @@ const StoreLogin = () => {
           {/* Login Form */}
           <form onSubmit={handleLogin} className="space-y-6">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-semibold text-white mb-3 text-right">
                 Phone Number
               </label>
-              <div className="relative">
+              <div className="relative group">
                 <input
                   type="tel"
                   value={formData.phone}
                   onChange={(e) => handleInputChange('phone', e.target.value)}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all pr-10"
-                  placeholder="9876543211"
+                  className="w-full px-4 py-3.5 border-2 border-white/30 rounded-xl focus:ring-2 focus:ring-green-700 focus:border-green-700 transition-all duration-300 pr-10 bg-white backdrop-blur-sm group-hover:bg-white group-hover:border-white/50"
+                  placeholder="9876543210"
                   required
                   disabled={otpSent}
                 />
                 <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
-                  <svg className="h-5 w-5 text-gray-400" fill="currentColor" viewBox="0 0 20 20">
+                  <svg className="h-5 w-5 text-gray-600 group-focus-within:text-green-500 transition-colors" fill="currentColor" viewBox="0 0 20 20">
                     <path d="M2 3a1 1 0 011-1h2.153a1 1 0 01.986.836l.74 4.435a1 1 0 01-.54 1.06l-1.548.773a11.037 11.037 0 006.105 6.105l.774-1.548a1 1 0 011.059-.54l4.435.74a1 1 0 01.836.986V17a1 1 0 01-1 1h-2C7.82 18 2 12.18 2 5V3z" />
                   </svg>
                 </div>
@@ -167,10 +144,10 @@ const StoreLogin = () => {
                 type="button"
                 onClick={handleSendOtp}
                 disabled={isLoading}
-                className={`w-full py-3 px-4 rounded-xl font-semibold text-white transition-all duration-300 ${
+                className={`w-full py-3.5 px-4 rounded-xl font-semibold text-white transition-all duration-300 ${
                   isLoading 
                     ? 'bg-green-400 cursor-not-allowed'
-                    : 'bg-gradient-to-r from-green-600 to-emerald-600 hover:opacity-90 shadow-md'
+                    : 'bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5'
                 } flex items-center justify-center`}
               >
                 {isLoading ? (
@@ -193,22 +170,22 @@ const StoreLogin = () => {
             ) : (
               <>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    OTP Code
+                  <label className="block text-sm font-semibold text-white mb-3 text-right">
+                    OTP
                   </label>
-                  <div className="relative">
+                  <div className="relative group">
                     <input
                       type={isOtpVisible ? "text" : "password"}
                       value={formData.otp}
                       onChange={(e) => handleInputChange('otp', e.target.value)}
-                      className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all pr-10"
-                      placeholder="654321"
+                      className="w-full px-4 py-3.5 border-2 border-white/30 rounded-xl focus:ring-2 focus:ring-green-700 focus:border-green-700 transition-all duration-300 pr-10 bg-white backdrop-blur-sm group-hover:bg-white group-hover:border-white/50"
+                      placeholder="123456"
                       required
                     />
                     <button
                       type="button"
                       onClick={() => setIsOtpVisible(!isOtpVisible)}
-                      className="absolute inset-y-0 right-0 flex items-center pr-3 text-gray-400 hover:text-gray-600"
+                      className="absolute inset-y-0 right-0 flex items-center pr-3 text-gray-600 hover:text-gray-800 transition-colors"
                     >
                       {isOtpVisible ? (
                         <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -227,10 +204,10 @@ const StoreLogin = () => {
                 <button
                   type="submit"
                   disabled={isLoading}
-                  className={`w-full py-3 px-4 rounded-xl font-semibold text-white transition-all duration-300 ${
+                  className={`w-full py-3.5 px-4 rounded-xl font-semibold text-white transition-all duration-300 ${
                     isLoading 
                       ? 'bg-green-400 cursor-not-allowed'
-                      : 'bg-gradient-to-r from-green-600 to-emerald-600 hover:opacity-90 shadow-md'
+                      : 'bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5'
                   } flex items-center justify-center`}
                 >
                   {isLoading ? (
@@ -254,11 +231,11 @@ const StoreLogin = () => {
             )}
 
             {error && (
-              <div className="bg-red-50 border-l-4 border-red-500 text-red-700 p-4 rounded-lg text-sm flex items-start">
-                <svg className="h-5 w-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
+              <div className="bg-red-500/20 border-l-4 border-red-500 text-red-800 p-4 rounded-xl text-sm flex items-start backdrop-blur-sm">
+                <svg className="h-5 w-5 mr-2 flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
                   <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
                 </svg>
-                <span>{error}</span>
+                <span className="font-medium">{error}</span>
               </div>
             )}
 
@@ -271,7 +248,7 @@ const StoreLogin = () => {
                     setShowOtpField(false);
                     setFormData({ phone: '', otp: '' });
                   }}
-                  className="text-sm text-green-600 hover:text-green-800 underline"
+                  className="text-sm text-green-600 hover:text-green-800 underline font-medium transition-colors"
                 >
                   Change Phone Number
                 </button>
@@ -280,22 +257,22 @@ const StoreLogin = () => {
           </form>
 
           {/* Demo Credentials */}
-          <div className="mt-8 border-t border-gray-200 pt-6">
+          <div className="mt-8 border-t border-white/30 pt-6">
             <div className="flex items-center justify-between mb-3">
-              <h4 className="text-sm font-semibold text-gray-700">Store Login Credentials</h4>
-              <button className="text-xs text-green-600 hover:text-green-800">
+              <h4 className="text-sm font-semibold text-gray-800">Store Login Credentials</h4>
+              <button className="text-xs text-green-600 hover:text-green-800 transition-colors">
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
               </button>
             </div>
-            <div className="bg-gray-50 p-4 rounded-lg">
-              <div className="text-xs text-gray-600 space-y-2">
+            <div className="bg-green-500/20 backdrop-blur-sm p-4 rounded-xl border border-green-300/30">
+              <div className="text-xs text-gray-800 space-y-2">
                 <div className="flex items-start">
-                  <span className="inline-block bg-green-100 text-green-800 text-xs px-2 py-1 rounded mr-2">Store</span>
+                  <span className="inline-block bg-green-500/30 text-green-900 text-xs px-2 py-1 rounded-lg mr-2 font-medium">Store</span>
                   <div>
-                    <div>Phone: 9876543211</div>
-                    <div className="text-gray-500">OTP: 654321</div>
+                    <div className="font-medium">Phone: 9876543211</div>
+                    <div className="text-gray-700">OTP: 654321</div>
                   </div>
                 </div>
               </div>

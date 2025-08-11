@@ -65,26 +65,26 @@ const AdminLogin = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-50 to-indigo-50 flex items-center justify-center p-4 relative overflow-hidden">
-      {/* Background Icons */}
-      <div className="absolute inset-0 opacity-10">
-        <div className="absolute top-10 left-10 text-6xl text-purple-300">👑</div>
-        <div className="absolute top-32 right-16 text-4xl text-indigo-200">⚡</div>
-        <div className="absolute bottom-20 left-20 text-5xl text-purple-300">🔧</div>
-        <div className="absolute bottom-40 right-10 text-3xl text-indigo-200">⚙️</div>
-        <div className="absolute top-16 left-1/4 text-5xl text-purple-300">🎯</div>
-        <div className="absolute bottom-16 right-1/4 text-4xl text-indigo-200">📊</div>
-      </div>
+    <div className="min-h-screen flex items-center justify-center p-4 relative overflow-hidden">
+      {/* Background Image */}
+      <div 
+        className="absolute inset-0 bg-cover bg-center bg-no-repeat"
+        style={{
+          backgroundImage: `url(${import.meta.env.BASE_URL}src/assets/login-image/adminloginimg.jpg)`,
+          filter: 'brightness(0.6) contrast(1.1)'
+        }}
+      />
       
-      <div className={`bg-white rounded-3xl shadow-2xl overflow-hidden w-full max-w-md transition-all duration-300 ${shake ? 'animate-shake' : ''} relative z-10`}>
-        {/* Gradient Header */}
-        <div className="bg-gradient-to-r from-purple-600 to-purple-800 py-8 px-8 text-white">
-          <div className="flex items-center justify-between">
-            <div>
-              <h1 className="text-3xl font-bold">Admin Portal</h1>
-              <p className="text-sm opacity-90 mt-1">Super Admin Access</p>
-            </div>
-            <div className="text-4xl">👑</div>
+      {/* Overlay for better text readability */}
+      <div className="absolute inset-0 bg-black bg-opacity-20" />
+      
+      {/* Content Container */}
+      <div className={`bg-white/30 backdrop-blur-sm rounded-2xl shadow-2xl overflow-hidden w-full max-w-md transition-all duration-300 ${shake ? 'animate-shake' : ''} relative z-10 border border-white/30`}>
+        {/* Header */}
+        <div className="py-8 px-8 text-center relative overflow-hidden">
+          <div className="relative z-10">
+            <h1 className="text-3xl font-bold tracking-tight text-white">Admin Portal</h1>
+            <p className="text-sm text-white/90 mt-2 font-medium">Super Admin Access</p>
           </div>
         </div>
 
@@ -92,20 +92,20 @@ const AdminLogin = () => {
           {/* Login Form */}
           <form onSubmit={handleLogin} className="space-y-6">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-semibold text-white mb-3">
                 Admin Email
               </label>
-              <div className="relative">
+              <div className="relative group">
                 <input
                   type="email"
                   value={formData.email}
                   onChange={(e) => handleInputChange('email', e.target.value)}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all pr-10"
+                  className="w-full px-4 py-3.5 border-2 border-white/30 rounded-xl focus:ring-2 focus:ring-amber-500 focus:border-amber-500 transition-all duration-300 pr-10 bg-white backdrop-blur-sm group-hover:bg-white group-hover:border-white/50"
                   placeholder="admin@priyafreshmeats.com"
                   required
                 />
                 <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
-                  <svg className="h-5 w-5 text-gray-400" fill="currentColor" viewBox="0 0 20 20">
+                  <svg className="h-5 w-5 text-gray-600 group-focus-within:text-amber-500 transition-colors" fill="currentColor" viewBox="0 0 20 20">
                     <path d="M2.003 5.884L10 9.882l7.997-3.998A2 2 0 0016 4H4a2 2 0 00-1.997 1.884z" />
                     <path d="M18 8.118l-8 4-8-4V14a2 2 0 002 2h12a2 2 0 002-2V8.118z" />
                   </svg>
@@ -114,22 +114,22 @@ const AdminLogin = () => {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-semibold text-white mb-3">
                 Admin Password
               </label>
-              <div className="relative">
+              <div className="relative group">
                 <input
                   type={isPasswordVisible ? "text" : "password"}
                   value={formData.password}
                   onChange={(e) => handleInputChange('password', e.target.value)}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all pr-10"
+                  className="w-full px-4 py-3.5 border-2 border-white/30 rounded-xl focus:ring-2 focus:ring-amber-500 focus:border-amber-500 transition-all duration-300 pr-10 bg-white backdrop-blur-sm group-hover:bg-white group-hover:border-white/50"
                   placeholder="••••••••"
                   required
                 />
                 <button
                   type="button"
                   onClick={() => setIsPasswordVisible(!isPasswordVisible)}
-                  className="absolute inset-y-0 right-0 flex items-center pr-3 text-gray-400 hover:text-gray-600"
+                  className="absolute inset-y-0 right-0 flex items-center pr-3 text-gray-600 hover:text-gray-800 transition-colors"
                 >
                   {isPasswordVisible ? (
                     <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -146,21 +146,21 @@ const AdminLogin = () => {
             </div>
 
             {error && (
-              <div className="bg-red-50 border-l-4 border-red-500 text-red-700 p-4 rounded-lg text-sm flex items-start">
-                <svg className="h-5 w-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
+              <div className="bg-red-500/20 border-l-4 border-red-500 text-red-800 p-4 rounded-xl text-sm flex items-start backdrop-blur-sm">
+                <svg className="h-5 w-5 mr-2 flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
                   <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
                 </svg>
-                <span>{error}</span>
+                <span className="font-medium">{error}</span>
               </div>
             )}
 
             <button
               type="submit"
               disabled={isLoading}
-              className={`w-full py-3 px-4 rounded-xl font-semibold text-white transition-all duration-300 ${
+              className={`w-full py-3.5 px-4 rounded-xl font-semibold text-white transition-all duration-300 ${
                 isLoading 
-                  ? 'bg-purple-400 cursor-not-allowed'
-                  : 'bg-gradient-to-r from-purple-600 to-purple-800 hover:opacity-90 shadow-md'
+                  ? 'bg-amber-400 cursor-not-allowed'
+                  : 'bg-gradient-to-r from-amber-600 to-orange-600 hover:from-amber-700 hover:to-orange-700 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5'
               } flex items-center justify-center`}
             >
               {isLoading ? (
@@ -183,24 +183,22 @@ const AdminLogin = () => {
           </form>
 
           {/* Demo Credentials */}
-          <div className="mt-8 border-t border-gray-200 pt-6">
+          <div className="mt-8 border-t border-white/30 pt-6">
             <div className="flex items-center justify-between mb-3">
-              <h4 className="text-sm font-semibold text-gray-700">Admin Credentials</h4>
+              <h4 className="text-sm font-semibold text-gray-800">Admin Credentials</h4>
             </div>
-            <div className="bg-purple-50 p-4 rounded-lg">
-              <div className="text-xs text-gray-600 space-y-2">
+            <div className="bg-amber-500/20 backdrop-blur-sm p-4 rounded-xl border border-amber-300/30">
+              <div className="text-xs text-gray-800 space-y-2">
                 <div className="flex items-start">
-                  <span className="inline-block bg-purple-100 text-purple-800 text-xs px-2 py-1 rounded mr-2">Admin</span>
+                  <span className="inline-block bg-amber-500/30 text-amber-900 text-xs px-2 py-1 rounded-lg mr-2 font-medium">Admin</span>
                   <div>
-                    <div>admin@priyafreshmeats.com</div>
-                    <div className="text-gray-500">admin123</div>
+                    <div className="font-medium">admin@priyafreshmeats.com</div>
+                    <div className="text-gray-700">admin123</div>
                   </div>
                 </div>
               </div>
             </div>
           </div>
-
-
         </div>
       </div>
 
