@@ -1,18 +1,19 @@
-import { useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { toast, ToastContainer } from 'react-toastify';
+import { useEffect, useState } from 'react';
 import 'react-toastify/dist/ReactToastify.css';
 
 export default function NotFoundPage() {
   const navigate = useNavigate();
   const location = useLocation();
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
 
   const redirectByRole = () => {
     try {
       let role = null;
       const pathname = location.pathname.toLowerCase();
 
-      // Determine likely role from URL
+      // Detect role from URL
       if (pathname.startsWith('/super-admin')) {
         role = 'super-admin';
       } else if (pathname.startsWith('/delivery-partner') || pathname.startsWith('/store')) {
@@ -21,7 +22,7 @@ export default function NotFoundPage() {
         role = 'manager';
       }
 
-      // Validate role with localStorage
+      // Check role from storage
       const superAdminUser = localStorage.getItem('superAdminUser');
       const storeStaff = localStorage.getItem('storeStaff');
       const managerUser = localStorage.getItem('managerUser');
@@ -34,11 +35,9 @@ export default function NotFoundPage() {
           console.error('Error parsing superAdminUser:', e);
         }
       }
-
       if (storeStaff && (!role || role === 'store')) {
         role = 'store';
       }
-
       if (managerUser && (!role || role === 'manager')) {
         try {
           const parsed = JSON.parse(managerUser);
@@ -48,7 +47,7 @@ export default function NotFoundPage() {
         }
       }
 
-      // Redirect based on detected role
+      // Redirect based on role
       switch (role) {
         case 'store':
           navigate('/store/live-orders');
@@ -75,8 +74,18 @@ export default function NotFoundPage() {
   };
 
   useEffect(() => {
-    redirectByRole();
-  }, []);
+    const superAdminUser = localStorage.getItem('superAdminUser');
+    const storeStaff = localStorage.getItem('storeStaff');
+    const managerUser = localStorage.getItem('managerUser');
+
+    if (superAdminUser || storeStaff || managerUser) {
+      setIsLoggedIn(true); // User is logged in
+    } else {
+      navigate('/'); // Not logged in → go to login
+    }
+  }, [navigate]);
+
+  if (!isLoggedIn) return null; // Prevent flashing before redirect
 
   return (
     <>
