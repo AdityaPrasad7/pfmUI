@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import IconPlus from '../../../components/Icon/IconPlus';
@@ -23,11 +23,68 @@ const DeliveryPartnerList: React.FC = () => {
     const [searchTerm, setSearchTerm] = useState('');
     const [statusFilter, setStatusFilter] = useState('all');
 
-    // Load data from localStorage or use empty array
-    const [deliveryPartners, setDeliveryPartners] = useState<DeliveryPartner[]>(() => {
+    // Load data from localStorage or use empty array initially
+    const [deliveryPartners, setDeliveryPartners] = useState<DeliveryPartner[]>([]);
+
+    // Load data and ensure we always have 5 rows
+    useEffect(() => {
         const savedData = localStorage.getItem('deliveryPartners');
-        return savedData ? JSON.parse(savedData) : [];
-    });
+        if (savedData) {
+            const parsedData = JSON.parse(savedData);
+            if (parsedData.length >= 5) {
+                setDeliveryPartners(parsedData);
+            } else {
+                // If we have less than 5 rows, regenerate dummy data
+                addDummyData();
+            }
+        } else {
+            // If no saved data, add dummy data
+            addDummyData();
+        }
+    }, []);
+
+    const addDummyData = () => {
+        const dummyData: DeliveryPartner[] = [
+            {
+                id: 'ST001',
+                name: 'Rahul Kumar',
+                initials: 'RK',
+                phoneNumber: '+91 98765 43210',
+                status: 'verified'
+            },
+            {
+                id: 'ST002',
+                name: 'Priya Sharma',
+                initials: 'PS',
+                phoneNumber: '+91 87654 32109',
+                status: 'verified'
+            },
+            {
+                id: 'ST003',
+                name: 'Amit Patel',
+                initials: 'AP',
+                phoneNumber: '+91 76543 21098',
+                status: 'pending'
+            },
+            {
+                id: 'ST004',
+                name: 'Sneha Singh',
+                initials: 'SS',
+                phoneNumber: '+91 65432 10987',
+                status: 'verified'
+            },
+            {
+                id: 'ST005',
+                name: 'Vikram Malhotra',
+                initials: 'VM',
+                phoneNumber: '+91 54321 09876',
+                status: 'pending'
+            }
+        ];
+        
+        setDeliveryPartners(dummyData);
+        localStorage.setItem('deliveryPartners', JSON.stringify(dummyData));
+    };
 
     const filteredPartners = deliveryPartners.filter(partner => {
         const matchesSearch = partner.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
