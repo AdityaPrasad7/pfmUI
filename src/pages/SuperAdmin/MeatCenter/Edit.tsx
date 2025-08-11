@@ -21,7 +21,7 @@ type FormInputs = {
   };
 };
 
-const MeetCenterEdit: React.FC = () => {
+const MeatCenterEdit: React.FC = () => {
   const location = useLocation();
   const navigate = useNavigate();
 
@@ -67,7 +67,7 @@ const MeetCenterEdit: React.FC = () => {
     console.log('Form Data:', data);
     toast.success('Store updated successfully!');
     setTimeout(() => {
-      navigate('/meet-center');
+      navigate('/meat-center');
     }, 3000);
   };
 
@@ -86,7 +86,7 @@ const MeetCenterEdit: React.FC = () => {
               {state.name ? 'Edit Store' : 'Add New Store'}
             </h2>
             <NavigateBtn
-              to="/meet-center"
+              to="/meat-center"
               label={
                 <span className="flex items-center gap-1">
                   <ArrowBackIcon fontSize="small" />
@@ -327,4 +327,4 @@ const MeetCenterEdit: React.FC = () => {
   );
 };
 
-export default MeetCenterEdit;
+export default MeatCenterEdit;

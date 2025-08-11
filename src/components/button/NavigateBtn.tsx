@@ -20,7 +20,7 @@ function NavigateBtn({ to, label = "Go", className = "" }: NavigateBtnProps) {
     className={`px-4 py-2 rounded text-white font-semibold transition 
   bg-gradient-to-r from-[#F47C7C] to-[#EF9F9F]
   hover:from-[#F47C7C] hover:to-[#EF9F9F] 
-  shadow-md hover:shadow-lg ${className}`}
+  shadow-md hover:shadow-lg ${className} max-w-[12rem]`}
     >
       {label}
     </button>

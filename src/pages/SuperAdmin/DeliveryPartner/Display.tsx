@@ -11,32 +11,30 @@
 // } from '@tanstack/react-table';
 // import NavigateBtn from '../../../components/button/NavigateBtn';
 // import AddIcon from '@mui/icons-material/Add';
-// import StarIcon from '@mui/icons-material/Star';
 // import SearchIcon from '@mui/icons-material/Search';
 // import FilterListIcon from '@mui/icons-material/FilterList';
 // import VerifiedIcon from '@mui/icons-material/Verified';
 // import PendingActionsIcon from '@mui/icons-material/PendingActions';
 // import Fuse from 'fuse.js';
 
-// type Partner = {
+// type Staff = {
 //   id: string;
 //   name: string;
-//   center: string;
-//   rating: number | 'N/A';
+//   store: string;
 //   status: 'Verified' | 'Pending Docs';
 // };
 
-// const columnHelper = createColumnHelper<Partner>();
+// const columnHelper = createColumnHelper<Staff>();
 
-// const DeliveryPartnerDisplay: React.FC = () => {
-//   const [data] = useState<Partner[]>([
-//     { id: 'DP001', name: 'Ravi Kumar', center: 'Bangalore', rating: 4.5, status: 'Verified' },
-//     { id: 'DP002', name: 'Ayesha Khan', center: 'Hyderabad', rating: 5, status: 'Pending Docs' },
-//     { id: 'DP003', name: 'John Doe', center: 'Mumbai', rating: 'N/A', status: 'Verified' },
-//     { id: 'DP004', name: 'Anita Singh', center: 'Delhi', rating: 3, status: 'Pending Docs' },
-//     { id: 'DP005', name: 'Sanjay Patel', center: 'Ahmedabad', rating: 4.2, status: 'Verified' },
-//     { id: 'DP006', name: 'Priya Sharma', center: 'Chennai', rating: 4.8, status: 'Verified' },
-//     { id: 'DP007', name: 'Priya Sharma', center: 'Chennai', rating: 4.8, status: 'Verified' },
+// const StoreStaffDisplay: React.FC = () => {
+//   const [data] = useState<Staff[]>([
+//     { id: 'ST001', name: 'Ravi Kumar', store: 'Fresh Meat Mart', status: 'Verified' },
+//     { id: 'ST002', name: 'Ayesha Khan', store: 'Bangalore Meat Shop', status: 'Pending Docs' },
+//     { id: 'ST003', name: 'John Doe', store: 'City Meat Center', status: 'Verified' },
+//     { id: 'ST004', name: 'Anita Singh', store: 'Premium Meat Store', status: 'Pending Docs' },
+//     { id: 'ST005', name: 'Sanjay Patel', store: 'Meat King', status: 'Verified' },
+//     { id: 'ST006', name: 'Priya Sharma', store: 'Quality Meat Shop', status: 'Verified' },
+//     { id: 'ST007', name: 'Rajesh Kumar', store: 'Family Meat Center', status: 'Verified' },
 //   ]);
 
 //   const [globalFilter, setGlobalFilter] = useState('');
@@ -52,7 +50,7 @@
 //   const fuse = useMemo(
 //     () =>
 //       new Fuse(data, {
-//         keys: ['id', 'name', 'center'],
+//         keys: ['id', 'name', 'store'],
 //         threshold: 0.3,
 //       }),
 //     [data]
@@ -61,7 +59,7 @@
 //   const filteredData = useMemo(() => {
 //     let result = data;
 //     if (globalFilter) {
-//       result = fuse.search(globalFilter).map(result => result.item);
+//       result = fuse.search(globalFilter).map((result: any) => result.item);
 //     }
 //     if (statusFilter) {
 //       result = result.filter(item => item.status.toLowerCase() === statusFilter.toLowerCase());
@@ -73,21 +71,12 @@
 //     setPagination((prev) => ({ ...prev, pageIndex: 0 }));
 //   }, [globalFilter, statusFilter]);
 
-//   const columns = useMemo<ColumnDef<Partner, any>[]>(
+//   const columns = useMemo<ColumnDef<Staff, any>[]>(
 //     () => [
-//       // {
-//       //   id: 'sno',
-//       //   header: 'S.No.',
-//       //   cell: ({ row }) => (
-//       //     <span className="text-gray-500 font-medium">{row.index + 1}</span>
-//       //   ),
-//       //   size: 80,
-//       //   enableSorting: false,
-//       // },
 //       columnHelper.accessor('id', {
-//         header: 'Partner ID',
+//         header: 'Staff ID',
 //         cell: (info) => (
-//           <span className="font-medium text-blue-600 hover:text-blue-800 cursor-pointer">
+//           <span className="font-medium text-[#EF9F9F] hover:text-[#F47C7C] cursor-pointer">
 //             {info.getValue()}
 //           </span>
 //         ),
@@ -98,7 +87,7 @@
 //         header: 'Name',
 //         cell: (info) => (
 //           <div className="flex items-center">
-//             <div className="bg-blue-100 text-blue-800 rounded-full w-8 h-8 flex items-center justify-center mr-3">
+//             <div className="bg-[#FFF2F2] text-[#F47C7C] rounded-full w-8 h-8 flex items-center justify-center mr-3">
 //               {info.getValue().split(' ').map((n: string) => n[0]).join('')}
 //             </div>
 //             <span className="font-medium text-gray-800">{info.getValue()}</span>
@@ -107,42 +96,18 @@
 //         size: 200,
 //         enableSorting: true,
 //       }),
-//       columnHelper.accessor('center', {
-//         header: 'Center',
+//       columnHelper.accessor('store', {
+//         header: 'Store Name',
 //         cell: (info) => (
 //           <div className="flex items-center">
 //             <svg className="w-4 h-4 text-gray-400 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-//               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-//               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+//               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
 //             </svg>
 //             <span className="text-gray-600">{info.getValue()}</span>
 //           </div>
 //         ),
-//         size: 150,
+//         size: 200,
 //         enableSorting: true,
-//       }),
-//       columnHelper.accessor('rating', {
-//         header: 'Rating',
-//         cell: (info) =>
-//           info.getValue() !== 'N/A' ? (
-//             <div className="flex items-center">
-//               <span className="font-medium mr-1">{info.getValue()}</span>
-//               <StarIcon className="text-yellow-500" style={{ fontSize: '1rem' }} />
-//             </div>
-//           ) : (
-//             <span className="text-gray-400">N/A</span>
-//           ),
-//         size: 100,
-//         enableSorting: true,
-//         sortUndefined: 1, // Place 'N/A' at the end when sorting
-//         sortingFn: (rowA, rowB, columnId) => {
-//           const a = rowA.getValue(columnId) as number | 'N/A';
-//           const b = rowB.getValue(columnId) as number | 'N/A';
-//           if (a === 'N/A' && b === 'N/A') return 0;
-//           if (a === 'N/A') return 1;
-//           if (b === 'N/A') return -1;
-//           return a > b ? 1 : a < b ? -1 : 0;
-//         },
 //       }),
 //       columnHelper.accessor('status', {
 //         header: 'Status',
@@ -199,15 +164,14 @@
 //          <div className="mb-8">
 //         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-5">
 //             <div>
-//             <h2 className="text-2xl font-bold text-gray-800">Delivery Partners</h2>
-//             {/* <p className="text-sm text-gray-500 mt-1">Manage your delivery partner network</p> */}
+//             <h2 className="text-2xl font-bold text-gray-800">Delivery Partner</h2>
 //           </div>
 //           <NavigateBtn
 //             to="/delivery-partner/add"
 //             label={
 //                <span className="flex items-center gap-1">
 //                  <AddIcon fontSize="small" />
-//                 <span>Add New Partner</span>
+//                 <span>Add New Staff</span>
 //               </span>
 //             }
 //              className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg shadow-sm hover:shadow-md transition-all"
@@ -225,7 +189,7 @@
 //               </div>
 //               <input
 //                 type="text"
-//                 placeholder="Search partners by ID, name or center..."
+//                 placeholder="Search staff by ID, name or store..."
 //                 value={globalFilter}
 //                 onChange={(e) => setGlobalFilter(e.target.value)}
 //                 className="pl-10 pr-4 py-2.5 w-full border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition placeholder-gray-400"
@@ -312,10 +276,9 @@
 //                             d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
 //                           />
 //                         </svg>
-//                         <h3 className="text-lg font-medium text-gray-700 mb-1">No partners found</h3>
+//                         <h3 className="text-lg font-medium text-gray-700 mb-1">No staff members found</h3>
 //                         <p className="text-sm text-gray-500 max-w-md">
-//                           Try adjusting your search or filter criteria. If you're expecting partners to appear,
-//                           make sure they meet your criteria.
+//                           Try adjusting your search or filter criteria.
 //                         </p>
 //                       </div>
 //                     </td>
@@ -333,7 +296,7 @@
 //                 {pagination.pageIndex * pagination.pageSize + 1}-
 //                 {Math.min((pagination.pageIndex + 1) * pagination.pageSize, filteredData.length)}
 //               </span>{' '}
-//               of <span className="font-medium">{filteredData.length}</span> partners
+//               of <span className="font-medium">{filteredData.length}</span> staff members
 //             </div>
 //             <div className="flex items-center gap-2">
 //               <button
@@ -349,7 +312,7 @@
 //                     key={i}
 //                     className={`px-3.5 py-1.5 border rounded-md text-sm font-medium ${
 //                       pagination.pageIndex === i
-//                         ? 'border-blue-200 text-blue-600 bg-blue-50'
+//                         ? 'border-[#EF9F9F] text-[#F47C7C] bg-[#FFF2F2]'
 //                         : 'border-gray-200 text-gray-700 hover:bg-gray-50'
 //                     }`}
 //                     onClick={() => table.setPageIndex(i)}
@@ -386,7 +349,7 @@
 //   );
 // };
 
-// export default DeliveryPartnerDisplay;
+// export default StoreStaffDisplay;
 
 import React, { useMemo, useState, useEffect } from 'react';
 import {
@@ -405,7 +368,12 @@ import SearchIcon from '@mui/icons-material/Search';
 import FilterListIcon from '@mui/icons-material/FilterList';
 import VerifiedIcon from '@mui/icons-material/Verified';
 import PendingActionsIcon from '@mui/icons-material/PendingActions';
+import ModeEditIcon from '@mui/icons-material/ModeEdit';
+import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
+import { toast, ToastContainer } from 'react-toastify';
 import Fuse from 'fuse.js';
+import { useNavigate } from 'react-router-dom';
+import 'react-toastify/dist/ReactToastify.css';
 
 type Staff = {
   id: string;
@@ -417,15 +385,21 @@ type Staff = {
 const columnHelper = createColumnHelper<Staff>();
 
 const StoreStaffDisplay: React.FC = () => {
-  const [data] = useState<Staff[]>([
-    { id: 'ST001', name: 'Ravi Kumar', store: 'Fresh Meat Mart', status: 'Verified' },
-    { id: 'ST002', name: 'Ayesha Khan', store: 'Bangalore Meat Shop', status: 'Pending Docs' },
-    { id: 'ST003', name: 'John Doe', store: 'City Meat Center', status: 'Verified' },
-    { id: 'ST004', name: 'Anita Singh', store: 'Premium Meat Store', status: 'Pending Docs' },
-    { id: 'ST005', name: 'Sanjay Patel', store: 'Meat King', status: 'Verified' },
-    { id: 'ST006', name: 'Priya Sharma', store: 'Quality Meat Shop', status: 'Verified' },
-    { id: 'ST007', name: 'Rajesh Kumar', store: 'Family Meat Center', status: 'Verified' },
-  ]);
+  const [data, setData] = useState<Staff[]>(() => {
+    const savedData = localStorage.getItem('storeStaff');
+    if (savedData) {
+      return JSON.parse(savedData);
+    }
+    return [
+      { id: 'ST001', name: 'Ravi Kumar', store: 'Fresh Meat Mart', status: 'Verified' },
+      { id: 'ST002', name: 'Ayesha Khan', store: 'Bangalore Meat Shop', status: 'Pending Docs' },
+      { id: 'ST003', name: 'John Doe', store: 'City Meat Center', status: 'Verified' },
+      { id: 'ST004', name: 'Anita Singh', store: 'Premium Meat Store', status: 'Pending Docs' },
+      { id: 'ST005', name: 'Sanjay Patel', store: 'Meat King', status: 'Verified' },
+      { id: 'ST006', name: 'Priya Sharma', store: 'Quality Meat Shop', status: 'Verified' },
+      { id: 'ST007', name: 'Rajesh Kumar', store: 'Family Meat Center', status: 'Verified' },
+    ];
+  });
 
   const [globalFilter, setGlobalFilter] = useState('');
   const [statusFilter, setStatusFilter] = useState('');
@@ -435,6 +409,16 @@ const StoreStaffDisplay: React.FC = () => {
   });
   const [sorting, setSorting] = useState<{ id: string; desc: boolean }[]>([{ id: 'id', desc: false }]);
   const PAGE_SIZES = [5, 10, 20, 30, 50];
+
+  // Save data to localStorage whenever it changes
+  useEffect(() => {
+    try {
+      localStorage.setItem('storeStaff', JSON.stringify(data));
+    } catch (error) {
+      console.error('Error saving to localStorage:', error);
+      toast.error('Failed to save data.');
+    }
+  }, [data]);
 
   // Fuzzy search implementation
   const fuse = useMemo(
@@ -456,6 +440,37 @@ const StoreStaffDisplay: React.FC = () => {
     }
     return result;
   }, [data, globalFilter, statusFilter]);
+
+  const navigate = useNavigate();
+
+  const handleEdit = (row: Staff) => {
+    try {
+      console.log('Editing:', row);
+      navigate(`/delivery-partner/edit/${row.id}`, {
+        state: {
+          id: row.id,
+          name: row.name,
+          store: row.store,
+          status: row.status,
+        },
+      });
+    } catch (error) {
+      console.error('Error navigating to edit:', error);
+      toast.error('Failed to initiate edit.');
+    }
+  };
+
+  const handleDelete = (row: Staff) => {
+    if (window.confirm(`Are you sure you want to delete ${row.name}?`)) {
+      try {
+        setData((prev) => prev.filter((staff) => staff.id !== row.id));
+        toast.success(`${row.name} deleted successfully!`);
+      } catch (error) {
+        console.error('Error deleting staff:', error);
+        toast.error('Failed to delete staff.');
+      }
+    }
+  };
 
   useEffect(() => {
     setPagination((prev) => ({ ...prev, pageIndex: 0 }));
@@ -522,6 +537,32 @@ const StoreStaffDisplay: React.FC = () => {
         size: 120,
         enableSorting: true,
       }),
+      {
+        id: 'actions',
+        header: () => <div className="text-center w-full">Actions</div>,
+        cell: ({ row }) => (
+          <div className="flex justify-center gap-2">
+            <button
+              onClick={() => handleEdit(row.original)}
+              className="p-2 rounded-lg bg-blue-50 text-blue-600 hover:bg-blue-100 transition-colors flex items-center"
+              aria-label={`Edit ${row.original.name}`}
+              title="Edit"
+            >
+              <ModeEditIcon fontSize="small" />
+            </button>
+            <button
+              onClick={() => handleDelete(row.original)}
+              className="p-2 rounded-lg bg-red-50 text-red-600 hover:bg-red-100 transition-colors flex items-center"
+              aria-label={`Delete ${row.original.name}`}
+              title="Delete"
+            >
+              <DeleteOutlineIcon fontSize="small" />
+            </button>
+          </div>
+        ),
+        size: 150,
+        enableSorting: false,
+      },
     ],
     []
   );
@@ -549,6 +590,7 @@ const StoreStaffDisplay: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-gray-50 px-4 py-8 sm:px-6 lg:px-8">
+      <ToastContainer />
       <div className="max-w-7xl mx-auto">
         {/* Header Section */}
          <div className="mb-8">

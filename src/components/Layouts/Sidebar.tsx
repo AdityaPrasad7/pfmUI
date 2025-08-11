@@ -89,7 +89,7 @@ const Sidebar = () => {
     let userRole: string | null = null;
     
     // Check based on the current path to avoid conflicts
-    if (window.location.pathname.startsWith('/super-admin') || window.location.pathname.startsWith('/meet-center') || window.location.pathname.startsWith('/delivery-partner') || window.location.pathname.startsWith('/assign-orders') || window.location.pathname.startsWith('/notification') || window.location.pathname.startsWith('/categories')) {
+    if (window.location.pathname.startsWith('/super-admin') || window.location.pathname.startsWith('/meat-center') || window.location.pathname.startsWith('/delivery-partner') || window.location.pathname.startsWith('/assign-orders') || window.location.pathname.startsWith('/notification') || window.location.pathname.startsWith('/categories')) {
       if (superAdminUser.role === 'super-admin') {
         user = superAdminUser;
         userRole = superAdminUser.role;
@@ -173,7 +173,7 @@ const Sidebar = () => {
                                         </NavLink>
                                     </li>
                                     <li className="nav-item">
-                                            <NavLink to="/meet-center" className="group">
+                                            <NavLink to="/meat-center" className="group">
                                             <div className="flex items-center">
                                                     <AddHomeIcon className="group-hover:!text-[#F47C7C] shrink-0" />
                                                     <span className="ltr:pl-3 rtl:pr-3 text-black dark:text-[#506690] dark:group-hover:text-white-dark">

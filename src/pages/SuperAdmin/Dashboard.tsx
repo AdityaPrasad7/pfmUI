@@ -369,7 +369,7 @@ const SuperAdminDashboard: React.FC = () => {
         {/* Header */}
         <div className="mb-6 sm:mb-8">
           <h1
-            className="font-semibold text-xl text-gray-800"
+            className="text-2xl font-bold text-gray-800 mt-2"
             role="heading"
             aria-level={1}
           >

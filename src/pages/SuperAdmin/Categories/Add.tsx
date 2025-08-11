@@ -179,7 +179,7 @@ const AddCategories: React.FC = () => {
   return (
     <>
       <ToastContainer />
-      <div className="bg-gradient-to-br px-4 py-8 sm:px-6 md:px-10 min-h-[60vh] w-[40rem] m-auto">
+      <div className="bg-gradient-to-br px-4 py-8 sm:px-6 md:px-10 min-h-[60vh] w-[40rem] max-w-[40rem] m-auto">
         <div className="max-w-3xl mx-auto bg-white rounded-xl shadow-md p-6 sm:p-8 border">
           {/* Header */}
           <div className="mb-8 flex items-center justify-between">

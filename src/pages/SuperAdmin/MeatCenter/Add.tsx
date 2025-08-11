@@ -21,7 +21,7 @@ interface FormInputs {
   };
 }
 
-const MeetCenterAdd: React.FC = () => {
+const MeatCenterAdd: React.FC = () => {
   const {
     register,
     handleSubmit,
@@ -49,7 +49,7 @@ const MeetCenterAdd: React.FC = () => {
     console.log('Form Data:', data);
     toast.success('Store added successfully!');
     setTimeout(() => {
-      navigate('/meet-center');
+      navigate('/meat-center');
     }, 3000);
   };
 
@@ -64,7 +64,7 @@ const MeetCenterAdd: React.FC = () => {
               Add New Store
             </h2>
             <NavigateBtn
-              to="/meet-center"
+              to="/meat-center"
               label={
                 <span className="flex items-center gap-1">
                   <ArrowBackIcon fontSize="small" />
@@ -301,4 +301,4 @@ const MeetCenterAdd: React.FC = () => {
   );
 };
 
-export default MeetCenterAdd;
+export default MeatCenterAdd;

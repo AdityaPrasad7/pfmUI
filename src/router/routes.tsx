@@ -11,9 +11,9 @@ const StoreLogin = lazy(() => import('../pages/VendorLogin'));
 
 // SuperAdmin imports
 const SuperAdminDashboard = lazy(() => import('../pages/SuperAdmin/Dashboard'));
-const MeetCenterDisplay = lazy(() => import('../pages/SuperAdmin/MeetCenter/Display'));
-const MeetCenterAdd = lazy(() => import('../pages/SuperAdmin/MeetCenter/Add'));
-const MeetCenterEdit = lazy(() => import('../pages/SuperAdmin/MeetCenter/Edit'));
+const MeetCenterDisplay = lazy(() => import('../pages/SuperAdmin/MeatCenter/Display'));
+const MeetCenterAdd = lazy(() => import('../pages/SuperAdmin/MeatCenter/Add'));
+const MeetCenterEdit = lazy(() => import('../pages/SuperAdmin/MeatCenter/Edit'));
 const SuperAdminDeliveryPartnerDisplay = lazy(() => import('../pages/SuperAdmin/DeliveryPartner/Display'));
 const SuperAdminDeliveryPartnerAdd = lazy(() => import('../pages/SuperAdmin/DeliveryPartner/Add'));
 const SuperAdminDeliveryPartnerEdit = lazy(() => import('../pages/SuperAdmin/DeliveryPartner/Edit'));
@@ -49,6 +49,7 @@ export const commonRoutes: AppRoute[] = [
     element: <StoreLogin />,
     layout: 'blank',
   },
+  // store role ===========================================================
   {
     path: '/store',
     element: <StoreDashboard />,
@@ -67,6 +68,7 @@ export const commonRoutes: AppRoute[] = [
     layout: 'blank',
     role: 'store',
   },
+  // manager role ================================================
   {
     path: '/manager/live-orders',
     element: <LiveOrders />,
@@ -80,106 +82,106 @@ export const commonRoutes: AppRoute[] = [
     role: 'manager',
   },
 
-          {
-            path: '/manager/delivery-partner',
-            element: <DeliveryPartner />,
-            layout: 'default',
-            role: 'manager',
-        },
-        {
-            path: '/manager/delivery-partner/add',
-            element: <AddPartner />,
-            layout: 'default',
-            role: 'manager',
-        },
-        {
-            path: '/manager/delivery-partner/details/:partnerId',
-            element: <PartnerDetails />,
-            layout: 'default',
-            role: 'manager',
-        },
-        // SuperAdmin routes
-        {
-            path: '/super-admin',
-            element: <SuperAdminDashboard />,
-            layout: 'default',
-            role: 'super-admin',
-        },
-        {
-            path: '/meet-center',
-            element: <MeetCenterDisplay />,
-            layout: 'default',
-            role: 'super-admin',
-        },
-        {
-            path: '/meet-center/add',
-            element: <MeetCenterAdd />,
-            layout: 'default',
-            role: 'super-admin',
-        },
-        {
-            path: '/meet-center/edit/:id',
-            element: <MeetCenterEdit />,
-            layout: 'default',
-            role: 'super-admin',
-        },
-        {
-            path: '/delivery-partner',
-            element: <SuperAdminDeliveryPartnerDisplay />,
-            layout: 'default',
-            role: 'super-admin',
-        },
-        {
-            path: '/delivery-partner/add',
-            element: <SuperAdminDeliveryPartnerAdd />,
-            layout: 'default',
-            role: 'super-admin',
-        },
-        {
-            path: '/delivery-partner/edit/:id',
-            element: <SuperAdminDeliveryPartnerEdit />,
-            layout: 'default',
-            role: 'super-admin',
-        },
-        {
-            path: '/assign-orders',
-            element: <AssignOrdersDisplay />,
-            layout: 'default',
-            role: 'super-admin',
-        },
-        {
-            path: '/assign-orders/assign',
-            element: <AssignOrdersAssign />,
-            layout: 'default',
-            role: 'super-admin',
-        },
-        {
-            path: '/notification',
-            element: <NotificationPage />,
-            layout: 'default',
-            role: 'super-admin',
-        },
-        {
-            path: '/categories',
-            element: <CategoriesDisplay />,
-            layout: 'default',
-            role: 'super-admin',
-        },
-        {
-            path: '/categories/add',
-            element: <CategoriesAdd />,
-            layout: 'default',
-            role: 'super-admin',
-        },
-        {
-            path: '/categories/edit/:id',
-            element: <CategoriesEdit />,
-            layout: 'default',
-            role: 'super-admin',
-        },
-//   {
-//     path: '/unauthorized',
-//     element: <Unauthorized />,
-//     layout: 'default',
-//   },
+  {
+    path: '/manager/delivery-partner',
+    element: <DeliveryPartner />,
+    layout: 'default',
+    role: 'manager',
+  },
+  {
+    path: '/manager/delivery-partner/add',
+    element: <AddPartner />,
+    layout: 'default',
+    role: 'manager',
+  },
+  {
+    path: '/manager/delivery-partner/details/:partnerId',
+    element: <PartnerDetails />,
+    layout: 'default',
+    role: 'manager',
+  },
+  // SuperAdmin routes ==============================================================
+  {
+    path: '/super-admin',
+    element: <SuperAdminDashboard />,
+    layout: 'default',
+    role: 'super-admin',
+  },
+  {
+    path: '/meat-center',
+    element: <MeetCenterDisplay />,
+    layout: 'default',
+    role: 'super-admin',
+  },
+  {
+    path: '/meat-center/add',
+    element: <MeetCenterAdd />,
+    layout: 'default',
+    role: 'super-admin',
+  },
+  {
+    path: '/meat-center/edit/:id',
+    element: <MeetCenterEdit />,
+    layout: 'default',
+    role: 'super-admin',
+  },
+  {
+    path: '/delivery-partner',
+    element: <SuperAdminDeliveryPartnerDisplay />,
+    layout: 'default',
+    role: 'super-admin',
+  },
+  {
+    path: '/delivery-partner/add',
+    element: <SuperAdminDeliveryPartnerAdd />,
+    layout: 'default',
+    role: 'super-admin',
+  },
+  {
+    path: '/delivery-partner/edit/:id',
+    element: <SuperAdminDeliveryPartnerEdit />,
+    layout: 'default',
+    role: 'super-admin',
+  },
+  {
+    path: '/assign-orders',
+    element: <AssignOrdersDisplay />,
+    layout: 'default',
+    role: 'super-admin',
+  },
+  {
+    path: '/assign-orders/assign',
+    element: <AssignOrdersAssign />,
+    layout: 'default',
+    role: 'super-admin',
+  },
+  {
+    path: '/notification',
+    element: <NotificationPage />,
+    layout: 'default',
+    role: 'super-admin',
+  },
+  {
+    path: '/categories',
+    element: <CategoriesDisplay />,
+    layout: 'default',
+    role: 'super-admin',
+  },
+  {
+    path: '/categories/add',
+    element: <CategoriesAdd />,
+    layout: 'default',
+    role: 'super-admin',
+  },
+  {
+    path: '/categories/edit/:id',
+    element: <CategoriesEdit />,
+    layout: 'default',
+    role: 'super-admin',
+  },
+  //   {
+  //     path: '/unauthorized',
+  //     element: <Unauthorized />,
+  //     layout: 'default',
+  //   },
 ];

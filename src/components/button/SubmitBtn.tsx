@@ -12,7 +12,11 @@ const SubmitButton: React.FC<SubmitButtonProps> = ({
   return (
     <button
       type="submit"
-  className="bg-gradient-to-r from-[#7FB77E] to-[#B1D7B4] text-white hover:from-[#B1D7B4] hover:to-[#7FB77E] px-4 py-2 rounded-md text-sm font-medium transition-all duration-200 disabled:opacity-50"
+  className="px-4 py-2 rounded text-white font-semibold transition 
+  bg-gradient-to-r from-[#7FB77E] to-[#B1D7B4]
+  hover:from-[#7FB77E] hover:to-[#B1D7B4] 
+  shadow-md hover:shadow-lg max-w-[12rem]"
+  // className="bg-gradient-to-r from-[#7FB77E] to-[#B1D7B4] text-white hover:from-[#B1D7B4] hover:to-[#7FB77E] px-4 py-2 rounded-md text-sm font-medium transition-all duration-200 disabled:opacity-50"
  disabled={isSubmitting}
     >
       {isSubmitting ? 'Submitting...' : label}

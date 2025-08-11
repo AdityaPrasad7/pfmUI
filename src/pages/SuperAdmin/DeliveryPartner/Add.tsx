@@ -180,7 +180,7 @@ const StoreStaffAdd: React.FC = () => {
   return (
     <>
       <ToastContainer />
-      <div className="bg-gradient-to-br px-4 py-8 sm:px-6 md:px-10 min-h-[60vh]">
+      <div className="bg-gradient-to-br px-4 py-8 sm:px-6 md:px-10 min-h-[60vh] max-w-[40rem] m-auto">
         <div className="max-w-3xl mx-auto bg-white rounded-xl shadow-md p-6 sm:p-8 border">
           {/* Header */}
           <div className="mb-8 flex items-center justify-between">
@@ -234,12 +234,12 @@ const StoreStaffAdd: React.FC = () => {
             </div> */}
 
             {/* Staff Name & Store Name in one row on desktop */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="">
               {/* Staff Name */}
               <div>
                 <label
                   htmlFor="staffName"
-                  className="block text-sm font-medium text-gray-700 mb-1"
+                  className="block text-sm font-medium text-gray-700 mb-2"
                 >
                   Staff Name
                 </label>
@@ -253,7 +253,7 @@ const StoreStaffAdd: React.FC = () => {
                       message: 'Name must be at least 2 characters',
                     },
                   })}
-                  className={`block w-full px-4 py-2 border rounded-lg shadow-sm sm:text-sm focus:outline-none focus:ring-2 focus:ring-blue-300 transition ${
+                  className={`block w-full px-4 py-2 border rounded-lg shadow-sm sm:text-sm focus:outline-none focus:ring-2 focus:ring-blue-300 transition mb-2 ${
                     errors.staffName ? 'border-red-400' : 'border-gray-300'
                   }`}
                   placeholder="Enter staff name"
@@ -270,7 +270,7 @@ const StoreStaffAdd: React.FC = () => {
               <div>
                 <label
                   htmlFor="storeName"
-                  className="block text-sm font-medium text-gray-700 mb-1"
+                  className="block text-sm font-medium text-gray-700 mb-2"
                 >
                   Store Name
                 </label>
