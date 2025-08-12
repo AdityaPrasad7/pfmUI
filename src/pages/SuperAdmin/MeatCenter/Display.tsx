@@ -321,24 +321,24 @@ const MeatCenterDisplay: React.FC = () => {
   });
 
   return (
-    <div className="min-h-screen bg-gray-50 px-4 py-8 sm:px-6 lg:px-8">
+    <div className="min-h-screen bg-gray-50 px-0 py-8 sm:px-6 lg:px-8">
       <ToastContainer />
       <div className="max-w-7xl mx-auto">
         {/* Header Section */}
         <div className="mb-8">
-          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-5">
-            <div>
-              <h1 className="text-2xl font-bold text-gray-800">Meat Center</h1>
+          <div className="flex flex-col sm:flex-row md:items-center items-end sm:justify-between gap-5">
+            <div className=' w-full'>
+              <h1 className="text-2xl font-bold text-gray-800 text-left">Meat Center</h1>
             </div>
             <NavigateBtn
               to="/meat-center/add"
               label={
-                <span className="flex items-center gap-1">
+                <span className="flex items-center gap-1 min-w-[8rem] ">
                   <AddIcon fontSize="small" />
                   <span>Add New Store</span>
                 </span>
               }
-              className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg shadow-sm hover:shadow-md transition-all"
+              // className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg shadow-sm hover:shadow-md transition-all"
             />
           </div>
         </div>
@@ -362,7 +362,7 @@ const MeatCenterDisplay: React.FC = () => {
           </div>
 
           {/* Table Section */}
-          <div className="overflow-x-auto">
+          <div className="overflow-x-auto ">
             <table className="min-w-full divide-y divide-gray-200">
               <thead className="bg-gray-50">
                 {table.getHeaderGroups().map((headerGroup) => (

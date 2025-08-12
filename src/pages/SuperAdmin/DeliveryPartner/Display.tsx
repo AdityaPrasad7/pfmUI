@@ -589,19 +589,19 @@ const StoreStaffDisplay: React.FC = () => {
   });
 
   return (
-    <div className="min-h-screen bg-gray-50 px-4 py-8 sm:px-6 lg:px-8">
+    <div className="min-h-screen bg-gray-50 px-0 py-8 sm:px-6 lg:px-8">
       <ToastContainer />
       <div className="max-w-7xl mx-auto">
         {/* Header Section */}
          <div className="mb-8">
-        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-5">
-            <div>
+        <div className="flex flex-col sm:flex-row md:items-center items-end sm:justify-between gap-5">
+            <div className='w-full'>
             <h2 className="text-2xl font-bold text-gray-800">Delivery Partner</h2>
           </div>
           <NavigateBtn
             to="/delivery-partner/add"
             label={
-               <span className="flex items-center gap-1">
+               <span className="flex items-center gap-1 min-w-[8rem]">
                  <AddIcon fontSize="small" />
                 <span>Add New Staff</span>
               </span>

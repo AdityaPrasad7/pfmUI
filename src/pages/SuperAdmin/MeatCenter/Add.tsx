@@ -5,6 +5,8 @@ import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import SubmitButton from '../../../components/button/SubmitBtn';
 import { toast, ToastContainer } from 'react-toastify';
 import { useNavigate } from 'react-router-dom';
+import ClearIcon from '@mui/icons-material/Clear';
+
 
 interface FormInputs {
   storeName: string;
@@ -56,7 +58,7 @@ const MeatCenterAdd: React.FC = () => {
   return (
     <>
       <ToastContainer />
-      <div className="bg-gradient-to-br px-4 py-8 sm:px-6 md:px-10 min-h-[60vh]">
+      <div className="bg-gradient-to-br px-0 py-8 sm:px-6 md:px-10 min-h-[60vh]">
         <div className="max-w-3xl mx-auto bg-white rounded-xl shadow-md p-6 sm:p-8 border">
           {/* Header */}
           <div className="mb-8 flex items-center justify-between">
@@ -66,11 +68,19 @@ const MeatCenterAdd: React.FC = () => {
             <NavigateBtn
               to="/meat-center"
               label={
-                <span className="flex items-center gap-1">
-                  <ArrowBackIcon fontSize="small" />
-                  <span className="hidden sm:inline">Back to List</span>
-                  <span className="sm:hidden">Back</span>
-                </span>
+                <>
+                  {/* Desktop / sm and up */}
+                  <span className="hidden sm:flex items-center gap-1">
+                    <ArrowBackIcon fontSize="small" />
+                    <span>Back to List</span>
+                  </span>
+
+                  {/* Mobile / below sm */}
+                  <span className="flex sm:hidden items-center gap-1">
+                    <ClearIcon fontSize="small" />
+                    {/* <span>Back</span> */}
+                  </span>
+                </>
               }
               className="text-sm"
             />
@@ -98,9 +108,8 @@ const MeatCenterAdd: React.FC = () => {
                       message: 'Store name must be at least 2 characters',
                     },
                   })}
-                  className={`block w-full px-4 py-2 border rounded-lg shadow-sm sm:text-sm focus:outline-none focus:ring-2 focus:ring-blue-300 transition ${
-                    errors.storeName ? 'border-red-400' : 'border-gray-300'
-                  }`}
+                  className={`block w-full px-4 py-2 border rounded-lg shadow-sm sm:text-sm focus:outline-none focus:ring-2 focus:ring-blue-300 transition ${errors.storeName ? 'border-red-400' : 'border-gray-300'
+                    }`}
                   placeholder="Enter store name"
                   aria-invalid={errors.storeName ? 'true' : 'false'}
                 />
@@ -129,9 +138,8 @@ const MeatCenterAdd: React.FC = () => {
                       message: 'Manager name must be at least 2 characters',
                     },
                   })}
-                  className={`block w-full px-4 py-2 border rounded-lg shadow-sm sm:text-sm focus:outline-none focus:ring-2 focus:ring-blue-300 transition ${
-                    errors.manager ? 'border-red-400' : 'border-gray-300'
-                  }`}
+                  className={`block w-full px-4 py-2 border rounded-lg shadow-sm sm:text-sm focus:outline-none focus:ring-2 focus:ring-blue-300 transition ${errors.manager ? 'border-red-400' : 'border-gray-300'
+                    }`}
                   placeholder="Enter manager name"
                   aria-invalid={errors.manager ? 'true' : 'false'}
                 />
@@ -161,9 +169,8 @@ const MeatCenterAdd: React.FC = () => {
                     message: 'Location must be at least 2 characters',
                   },
                 })}
-                className={`block w-full px-4 py-2 border rounded-lg shadow-sm sm:text-sm focus:outline-none focus:ring-2 focus:ring-blue-300 transition resize-none ${
-                  errors.location ? 'border-red-400' : 'border-gray-300'
-                }`}
+                className={`block w-full px-4 py-2 border rounded-lg shadow-sm sm:text-sm focus:outline-none focus:ring-2 focus:ring-blue-300 transition resize-none ${errors.location ? 'border-red-400' : 'border-gray-300'
+                  }`}
                 placeholder="Enter location address"
                 aria-invalid={errors.location ? 'true' : 'false'}
               />
@@ -193,9 +200,8 @@ const MeatCenterAdd: React.FC = () => {
                       message: 'Enter valid latitude (-90 to 90)',
                     },
                   })}
-                  className={`block w-full px-4 py-2 border rounded-lg shadow-sm sm:text-sm focus:outline-none focus:ring-2 focus:ring-blue-300 transition ${
-                    errors.latitude ? 'border-red-400' : 'border-gray-300'
-                  }`}
+                  className={`block w-full px-4 py-2 border rounded-lg shadow-sm sm:text-sm focus:outline-none focus:ring-2 focus:ring-blue-300 transition ${errors.latitude ? 'border-red-400' : 'border-gray-300'
+                    }`}
                   placeholder="e.g. 12.345678"
                   aria-invalid={errors.latitude ? 'true' : 'false'}
                 />
@@ -223,9 +229,8 @@ const MeatCenterAdd: React.FC = () => {
                       message: 'Enter valid longitude (-180 to 180)',
                     },
                   })}
-                  className={`block w-full px-4 py-2 border rounded-lg shadow-sm sm:text-sm focus:outline-none focus:ring-2 focus:ring-blue-300 transition ${
-                    errors.longitude ? 'border-red-400' : 'border-gray-300'
-                  }`}
+                  className={`block w-full px-4 py-2 border rounded-lg shadow-sm sm:text-sm focus:outline-none focus:ring-2 focus:ring-blue-300 transition ${errors.longitude ? 'border-red-400' : 'border-gray-300'
+                    }`}
                   placeholder="e.g. 98.765432"
                   aria-invalid={errors.longitude ? 'true' : 'false'}
                 />
@@ -275,23 +280,23 @@ const MeatCenterAdd: React.FC = () => {
                   />
                   <span className="ml-2 text-gray-700">Fish</span>
                 </label>
-                  <label className="inline-flex items-center">
-                  
+                <label className="inline-flex items-center">
+
                   <input
-                   type="checkbox"
+                    type="checkbox"
                     {...register('products.meat')}
                     className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
-                   />
+                  />
                   <span className="ml-2 text-gray-700">Meat</span>
                 </label>
               </div>
             </div>
 
             {/* Submit Button */}
-            <div className="flex justify-end">
-              <SubmitButton 
-                label={isSubmitting ? "Adding Store..." : "Add Store"} 
-                isSubmitting={isSubmitting} 
+            <div className="flex justify-center">
+              <SubmitButton
+                label={isSubmitting ? "Adding Store..." : "Add Store"}
+                isSubmitting={isSubmitting}
               />
             </div>
           </form>

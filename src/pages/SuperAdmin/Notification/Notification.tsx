@@ -152,7 +152,7 @@
 //   </p>
 // )}
 
-                
+
 //               </div>
 
 //             </div>
@@ -180,6 +180,8 @@ import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import SubmitButton from '../../../components/button/SubmitBtn';
 import { toast, ToastContainer } from 'react-toastify';
 import { useNavigate } from 'react-router-dom';
+import ClearIcon from "@mui/icons-material/Clear";
+
 
 interface FormInputs {
   title: string;
@@ -211,23 +213,32 @@ const Notification: React.FC = () => {
   return (
     <>
       <ToastContainer />
-      <div className="flex items-center justify-center bg-gradient-to-br  to-gray-200 px-4 py-8 sm:px-6 lg:px-8 max-w-[40rem] m-auto">
+      <div className="flex items-center justify-center bg-gradient-to-br to-gray-200 px-0 py-8 sm:px-6 lg:px-8 max-w-[40rem] m-auto">
         <div className="w-full max-w-md sm:max-w-lg md:max-w-2xl lg:max-w-3xl bg-white rounded-xl shadow-lg p-4 sm:p-6 md:p-8 border">
           {/* Header */}
-          <div className="mb-6 sm:mb-8 flex sm:flex-row items-center justify-between gap-4">
-            <h2 className="text-xl sm:text-2xl font-bold text-gray-800">
+          <div className="mb-6 sm:mb-8 flex sm:flex-row items-start justify-between gap-4">
+            {/* <div className="flex flex-col sm:flex-row md:items-center items-end sm:justify-between gap-5"> */}
+            <h2 className="text-xl sm:text-2xl font-bold text-gray-800 w-full mb-4">
               Send Notification
             </h2>
             <NavigateBtn
               to="/super-admin"
               label={
-                <span className="flex items-center gap-1">
-                  <ArrowBackIcon fontSize="small" />
-                  <span className="hidden sm:inline">Back to List</span>
-                  <span className="sm:hidden">Back</span>
-                </span>
+                <>
+                  {/* Desktop / sm and up */}
+                  <span className="hidden sm:flex items-center gap-1 min-w-[7rem]">
+                    <ArrowBackIcon fontSize="small" />
+                    <span>Back to List</span>
+                  </span>
+
+                  {/* Mobile / below sm */}
+                  <span className="flex sm:hidden items-center gap-1 min-w-[1rem]">
+                    <ClearIcon fontSize="small" />
+                    {/* <span>Back</span> */}
+                  </span>
+                </>
               }
-              // className="text-sm font-medium text-blue-600 hover:text-blue-800"
+            // className="text-sm font-medium text-blue-600 hover:text-blue-800"
             />
           </div>
 
@@ -251,9 +262,8 @@ const Notification: React.FC = () => {
                     message: 'Title must be at least 2 characters',
                   },
                 })}
-                className={`block w-full px-3 sm:px-4 py-2 border rounded-lg shadow-sm text-sm sm:text-base focus:outline-none focus:ring-2 focus:ring-blue-300 transition ${
-                  errors.title ? 'border-red-400' : 'border-gray-300'
-                }`}
+                className={`block w-full px-3 sm:px-4 py-2 border rounded-lg shadow-sm text-sm sm:text-base focus:outline-none focus:ring-2 focus:ring-blue-300 transition ${errors.title ? 'border-red-400' : 'border-gray-300'
+                  }`}
                 placeholder="Enter title"
                 aria-invalid={errors.title ? 'true' : 'false'}
               />
@@ -281,9 +291,8 @@ const Notification: React.FC = () => {
                     message: 'Body must be at least 2 characters',
                   },
                 })}
-                className={`block w-full px-3 sm:px-4 py-2 border rounded-lg shadow-sm text-sm sm:text-base focus:outline-none focus:ring-2 focus:ring-blue-300 transition ${
-                  errors.body ? 'border-red-400' : 'border-gray-300'
-                }`}
+                className={`block w-full px-3 sm:px-4 py-2 border rounded-lg shadow-sm text-sm sm:text-base focus:outline-none focus:ring-2 focus:ring-blue-300 transition ${errors.body ? 'border-red-400' : 'border-gray-300'
+                  }`}
                 placeholder="Enter body"
                 aria-invalid={errors.body ? 'true' : 'false'}
                 rows={4}
@@ -296,11 +305,11 @@ const Notification: React.FC = () => {
             </div>
 
             {/* Submit Button */}
-            <div className="flex justify-end pt-4">
+            <div className="flex justify-center pt-4">
               <SubmitButton
                 label="Submit"
                 isSubmitting={isSubmitting}
-                // className="w-full sm:w-auto px-4 py-2 text-sm sm:text-base"
+              // className="w-full sm:w-auto px-4 py-2 text-sm sm:text-base"
               />
             </div>
           </form>

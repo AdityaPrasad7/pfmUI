@@ -33,69 +33,77 @@ import IconMenuForms from '../Icon/Menu/IconMenuForms';
 import IconMenuPages from '../Icon/Menu/IconMenuPages';
 import IconMenuMore from '../Icon/Menu/IconMenuMore';
 import profile from "../../assets/profile/priya.jpg"
+import { toast, ToastContainer } from 'react-toastify';
 
 const Header = () => {
     const location = useLocation();
     const navigate = useNavigate();
-    
+
     // Check all user types in localStorage
     const superAdminUser = JSON.parse(localStorage.getItem('superAdminUser') || '{}');
     const managerUser = JSON.parse(localStorage.getItem('managerUser') || '{}');
     const storeUser = JSON.parse(localStorage.getItem('storeUser') || '{}');
-    
+
     // Determine which user is logged in based on the current path
     let user = null;
     let userRole = null;
-    
+
     // Check based on the current path to avoid conflicts
     if (window.location.pathname.startsWith('/super-admin') || window.location.pathname.startsWith('/meet-center') || window.location.pathname.startsWith('/delivery-partner') || window.location.pathname.startsWith('/assign-orders') || window.location.pathname.startsWith('/notification') || window.location.pathname.startsWith('/categories')) {
-      if (superAdminUser.role === 'super-admin') {
-        user = superAdminUser;
-        userRole = superAdminUser.role;
-      }
-    } else if (window.location.pathname.startsWith('/manager')) {
-      if (managerUser.role === 'manager') {
-        user = managerUser;
-        userRole = managerUser.role;
-      }
-    } else if (window.location.pathname.startsWith('/store')) {
-      if (storeUser.role === 'store') {
-        user = storeUser;
-        userRole = storeUser.role;
-      }
-    } else {
-      // For dashboard routes, check all user types
-      if (superAdminUser.role === 'super-admin') {
-        user = superAdminUser;
-        userRole = superAdminUser.role;
-      } else if (managerUser.role === 'manager') {
-        user = managerUser;
-        userRole = managerUser.role;
-      } else if (storeUser.role === 'store') {
-        user = storeUser;
-        userRole = storeUser.role;
-      }
-    }
-    
-    const handleLogout = () => {
-        // Determine which user type to redirect to based on current path
-        let redirectPath = '/';
-        
-        if (window.location.pathname.startsWith('/super-admin') || window.location.pathname.startsWith('/meet-center') || window.location.pathname.startsWith('/delivery-partner') || window.location.pathname.startsWith('/assign-orders') || window.location.pathname.startsWith('/notification') || window.location.pathname.startsWith('/categories')) {
-            redirectPath = '/admin-login';
-        } else if (window.location.pathname.startsWith('/manager')) {
-            redirectPath = '/manager-login';
-        } else if (window.location.pathname.startsWith('/store')) {
-            redirectPath = '/store-login';
+        if (superAdminUser.role === 'super-admin') {
+            user = superAdminUser;
+            userRole = superAdminUser.role;
         }
-        
-        // Clear all user data
-        localStorage.removeItem('superAdminUser');
-        localStorage.removeItem('managerUser');
-        localStorage.removeItem('storeUser');
-        
-        // Redirect to appropriate login page
-        navigate(redirectPath);
+    } else if (window.location.pathname.startsWith('/manager')) {
+        if (managerUser.role === 'manager') {
+            user = managerUser;
+            userRole = managerUser.role;
+        }
+    } else if (window.location.pathname.startsWith('/store')) {
+        if (storeUser.role === 'store') {
+            user = storeUser;
+            userRole = storeUser.role;
+        }
+    } else {
+        // For dashboard routes, check all user types
+        if (superAdminUser.role === 'super-admin') {
+            user = superAdminUser;
+            userRole = superAdminUser.role;
+        } else if (managerUser.role === 'manager') {
+            user = managerUser;
+            userRole = managerUser.role;
+        } else if (storeUser.role === 'store') {
+            user = storeUser;
+            userRole = storeUser.role;
+        }
+    }
+
+    const handleLogout = () => {
+
+        toast.success("Logout Successfully!", {
+            style: { width: window.innerWidth < 640 ? "250px" : "350px", }
+        })
+
+        setTimeout(() => {
+            // Determine which user type to redirect to based on current path
+            let redirectPath = '/';
+
+            if (window.location.pathname.startsWith('/super-admin') || window.location.pathname.startsWith('/meet-center') || window.location.pathname.startsWith('/delivery-partner') || window.location.pathname.startsWith('/assign-orders') || window.location.pathname.startsWith('/notification') || window.location.pathname.startsWith('/categories')) {
+                redirectPath = '/admin-login';
+            } else if (window.location.pathname.startsWith('/manager')) {
+                redirectPath = '/manager-login';
+            } else if (window.location.pathname.startsWith('/store')) {
+                redirectPath = '/store-login';
+            }
+
+            // Clear all user data
+            localStorage.removeItem('superAdminUser');
+            localStorage.removeItem('managerUser');
+            localStorage.removeItem('storeUser');
+
+            // Redirect to appropriate login page
+            navigate(redirectPath);
+        }, 2000)
     };
     useEffect(() => {
         const selector = document.querySelector('ul.horizontal-menu a[href="' + window.location.pathname + '"]');
@@ -201,43 +209,45 @@ const Header = () => {
     const { t } = useTranslation();
 
     return (
-        <header className={`z-40 ${themeConfig.semidark && themeConfig.menu === 'horizontal' ? 'dark' : ''}`}>
-            <div className="shadow-sm">
-                <div className="relative bg-white flex w-full items-center px-5 py-2.5">
-                    <div className="horizontal-logo flex lg:hidden justify-between items-center ltr:mr-2 rtl:ml-2">
-                        <button
-                            type="button"
-                            className="collapse-icon flex-none flex lg:hidden ltr:ml-2 rtl:mr-2 p-3 rounded-xl text-gray-700 hover:text-blue-600 hover:bg-gray-50 transform hover:scale-105 transition-all duration-300"
-                            onClick={() => {
-                                dispatch(toggleSidebar());
-                            }}
-                        >
-                            <IconMenu className="w-6 h-6" />
-                        </button>
-                    </div>
+        <>
+            <ToastContainer />
+            <header className={`z-40 ${themeConfig.semidark && themeConfig.menu === 'horizontal' ? 'dark' : ''}`}>
+                <div className="shadow-sm">
+                    <div className="relative bg-white flex w-full items-center px-5 py-2.5">
+                        <div className="horizontal-logo flex lg:hidden justify-between items-center ltr:mr-2 rtl:ml-2">
+                            <button
+                                type="button"
+                                className="collapse-icon flex-none flex lg:hidden ltr:ml-2 rtl:mr-2 p-3 rounded-xl text-gray-700 hover:text-blue-600 hover:bg-gray-50 transform hover:scale-105 transition-all duration-300"
+                                onClick={() => {
+                                    dispatch(toggleSidebar());
+                                }}
+                            >
+                                <IconMenu className="w-6 h-6" />
+                            </button>
+                        </div>
 
-                    <div className="ltr:mr-2 rtl:ml-2 hidden sm:block">
-                        <ul className="flex items-center space-x-2 rtl:space-x-reverse dark:text-[#d0d2d6]">
-                            {/* <li>
+                        <div className="ltr:mr-2 rtl:ml-2 hidden sm:block">
+                            <ul className="flex items-center space-x-2 rtl:space-x-reverse dark:text-[#d0d2d6]">
+                                {/* <li>
                                 <Link to="/apps/calendar" className="block p-2 rounded-full bg-white-light/40 dark:bg-dark/40 hover:text-primary hover:bg-white-light/90 dark:hover:bg-dark/60">
                                     <IconCalendar />
                                 </Link>
                             </li> */}
-                            {/* <li>
+                                {/* <li>
                                 <Link to="/apps/todolist" className="block p-2 rounded-full bg-white-light/40 dark:bg-dark/40 hover:text-primary hover:bg-white-light/90 dark:hover:bg-dark/60">
                                     <IconEdit />
                                 </Link>
                             </li> */}
-                            {/* <li>
+                                {/* <li>
                                 <Link to="/apps/chat" className="block p-2 rounded-full bg-white-light/40 dark:bg-dark/40 hover:text-primary hover:bg-white-light/90 dark:hover:bg-dark/60">
                                     <IconChatNotification />
                                 </Link>
                             </li> */}
-                        </ul>
-                    </div>
-                    <div className="sm:flex-1 ltr:sm:ml-0 ltr:ml-auto sm:rtl:mr-0 rtl:mr-auto flex items-center space-x-1.5 lg:space-x-2 rtl:space-x-reverse dark:text-[#d0d2d6]">
-                        <div className="sm:ltr:mr-auto sm:rtl:ml-auto">
-                            {/* <form
+                            </ul>
+                        </div>
+                        <div className="sm:flex-1 ltr:sm:ml-0 ltr:ml-auto sm:rtl:mr-0 rtl:mr-auto flex items-center space-x-1.5 lg:space-x-2 rtl:space-x-reverse dark:text-[#d0d2d6]">
+                            <div className="sm:ltr:mr-auto sm:rtl:ml-auto">
+                                {/* <form
                                 className={`${search && '!block'} sm:relative absolute inset-x-0 sm:top-0 top-1/2 sm:translate-y-0 -translate-y-1/2 sm:mx-0 mx-4 z-10 sm:block hidden`}
                                 onSubmit={() => setSearch(false)}
                             >
@@ -262,8 +272,8 @@ const Header = () => {
                             >
                                 <IconSearch className="w-4.5 h-4.5 mx-auto dark:text-[#d0d2d6]" />
                             </button> */}
-                        </div>
-                        {/* <div>
+                            </div>
+                            {/* <div>
                             {themeConfig.theme === 'light' ? (
                                 <button
                                     className={`${
@@ -306,7 +316,7 @@ const Header = () => {
                                 </button>
                             )}
                         </div> */}
-                        {/* <div className="dropdown shrink-0">
+                            {/* <div className="dropdown shrink-0">
                             <Dropdown
                                 offset={[0, 8]}
                                 placement={`${isRtl ? 'bottom-start' : 'bottom-end'}`}
@@ -335,7 +345,7 @@ const Header = () => {
                                 </ul>
                             </Dropdown>
                         </div> */}
-                        {/* <div className="dropdown shrink-0">
+                            {/* <div className="dropdown shrink-0">
                             <Dropdown
                                 offset={[0, 8]}
                                 placement={`${isRtl ? 'bottom-start' : 'bottom-end'}`}
@@ -398,7 +408,7 @@ const Header = () => {
                                 </ul>
                             </Dropdown>
                         </div> */}
-                        {/* <div className="dropdown shrink-0">
+                            {/* <div className="dropdown shrink-0">
                             <Dropdown
                                 offset={[0, 8]}
                                 placement={`${isRtl ? 'bottom-start' : 'bottom-end'}`}
@@ -472,60 +482,60 @@ const Header = () => {
                                 </ul>
                             </Dropdown>
                         </div> */}
-                        <div className="dropdown shrink-0 flex">
-                            <Dropdown
-                                offset={[0, 8]}
-                                placement={`${isRtl ? 'bottom-start' : 'bottom-end'}`}
-                                btnClassName="relative group block"
-                                button={<img className="w-9 h-9 rounded-full object-cover saturate-50 group-hover:saturate-100" src={profile} alt="userProfile" />}
-                            >
-                                <ul className="text-dark dark:text-white-dark !py-0 w-[230px] font-semibold dark:text-white-light/90">
-                                    <li>
-                                        <div className="flex items-center px-4 py-4">
-                                            <img className="rounded-md w-10 h-10 object-cover" src={profile} alt="userProfile" />
-                                            <div className="ltr:pl-4 rtl:pr-4 truncate">
-                                                <h4 className="text-base">
-                                                    {user.name || 'User'}
-                                                    <span className="text-xs bg-success-light rounded text-success px-1 ltr:ml-2 rtl:ml-2">{user.role || 'Guest'}</span>
-                                                </h4>
-                                                <button type="button" className="text-black/60 hover:text-primary dark:text-dark-light/60 dark:hover:text-white">
-                                                    {user.email || 'user@example.com'}
-                                                </button>
+                            <div className="dropdown shrink-0 flex">
+                                <Dropdown
+                                    offset={[0, 8]}
+                                    placement={`${isRtl ? 'bottom-start' : 'bottom-end'}`}
+                                    btnClassName="relative group block"
+                                    button={<img className="w-9 h-9 rounded-full object-cover saturate-50 group-hover:saturate-100" src={profile} alt="userProfile" />}
+                                >
+                                    <ul className="text-dark dark:text-white-dark !py-0 w-[230px] font-semibold dark:text-white-light/90">
+                                        <li>
+                                            <div className="flex items-center px-4 py-4">
+                                                <img className="rounded-md w-10 h-10 object-cover" src={profile} alt="userProfile" />
+                                                <div className="ltr:pl-4 rtl:pr-4 truncate">
+                                                    <h4 className="text-base">
+                                                        {user.name || 'User'}
+                                                        {/* <span className="text-xs bg-success-light rounded text-success px-1 ltr:ml-2 rtl:ml-2">{user.role || 'Guest'}</span> */}
+                                                    </h4>
+                                                    <button type="button" className="text-black/60 hover:text-primary dark:text-dark-light/60 dark:hover:text-white">
+                                                        {user.email || 'user@example.com'}
+                                                    </button>
+                                                </div>
                                             </div>
-                                        </div>
-                                    </li>
-                                    {/* <li>
+                                        </li>
+                                        {/* <li>
                                         <Link to="/users/profile" className="dark:hover:text-white">
                                             <IconUser className="w-4.5 h-4.5 ltr:mr-2 rtl:ml-2 shrink-0" />
                                             Profile
                                         </Link>
                                     </li> */}
-                                    {/* <li>
+                                        {/* <li>
                                         <Link to="/apps/mailbox" className="dark:hover:text-white">
                                             <IconMail className="w-4.5 h-4.5 ltr:mr-2 rtl:ml-2 shrink-0" />
                                             Inbox
                                         </Link>
                                     </li> */}
-                                    {/* <li>
+                                        {/* <li>
                                         <Link to="/auth/boxed-lockscreen" className="dark:hover:text-white">
                                             <IconLockDots className="w-4.5 h-4.5 ltr:mr-2 rtl:ml-2 shrink-0" />
                                             Lock Screen
                                         </Link>
                                     </li> */}
-                                    <li className="border-t border-white-light dark:border-white-light/10">
-                                        <button onClick={handleLogout} className="text-danger !py-3 w-full text-left">
-                                            <IconLogout className="w-4.5 h-4.5 ltr:mr-2 rtl:ml-2 rotate-90 shrink-0" />
-                                            Sign Out
-                                        </button>
-                                    </li>
-                                </ul>
-                            </Dropdown>
+                                        <li className="border-t border-white-light dark:border-white-light/10">
+                                            <button onClick={handleLogout} className="text-danger !py-3 w-full text-left">
+                                                <IconLogout className="w-4.5 h-4.5 ltr:mr-2 rtl:ml-2 rotate-90 shrink-0" />
+                                                Sign Out
+                                            </button>
+                                        </li>
+                                    </ul>
+                                </Dropdown>
+                            </div>
                         </div>
                     </div>
-                </div>
 
-                {/* horizontal menu */}
-                {/* <ul className="horizontal-menu hidden py-1.5 font-semibold px-6 lg:space-x-1.5 xl:space-x-8 rtl:space-x-reverse bg-white border-t border-[#ebedf2] dark:border-[#191e3a] dark:bg-black text-black dark:text-white-dark">
+                    {/* horizontal menu */}
+                    {/* <ul className="horizontal-menu hidden py-1.5 font-semibold px-6 lg:space-x-1.5 xl:space-x-8 rtl:space-x-reverse bg-white border-t border-[#ebedf2] dark:border-[#191e3a] dark:bg-black text-black dark:text-white-dark">
                     <li className="menu nav-item relative">
                         <button type="button" className="nav-link">
                             <div className="flex items-center">
@@ -1042,8 +1052,9 @@ const Header = () => {
                         </ul>
                     </li>
                 </ul> */}
-            </div>
-        </header>
+                </div>
+            </header>
+        </>
     );
 };
 

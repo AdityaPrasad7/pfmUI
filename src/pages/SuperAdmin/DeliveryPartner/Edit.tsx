@@ -6,6 +6,8 @@ import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import SubmitButton from '../../../components/button/SubmitBtn';
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import ClearIcon from '@mui/icons-material/Clear';
+
 
 interface FormInputs {
   id: string;
@@ -58,23 +60,31 @@ const DeliveryPartnerEdit: React.FC = () => {
   return (
     <>
       <ToastContainer />
-      <div className="flex items-center justify-center bg-gradient-to-br  px-4 py-8 sm:px-6 lg:px-8 max-w-[40rem] m-auto">
+      <div className="flex items-center justify-center bg-gradient-to-br  px-0 py-8 sm:px-6 lg:px-8 max-w-[40rem] m-auto">
         <div className="w-full max-w-md sm:max-w-lg md:max-w-2xl lg:max-w-3xl bg-white rounded-xl shadow-lg p-4 sm:p-6 md:p-8 border">
           {/* Header */}
-          <div className="mb-6 sm:mb-8 flex flex-col sm:flex-row items-center justify-between gap-4">
+          <div className="mb-8 flex items-center justify-between">
             <h2 className="text-xl sm:text-2xl font-bold text-gray-800">
               Edit Delivery Partner
             </h2>
             <NavigateBtn
               to="/delivery-partner"
               label={
-                <span className="flex items-center gap-1">
-                  <ArrowBackIcon fontSize="small" />
-                  <span className="hidden sm:inline">Back to List</span>
-                  <span className="sm:hidden">Back</span>
-                </span>
+                <>
+                  {/* Desktop / sm and up */}
+                  <span className="hidden sm:flex items-center gap-1">
+                    <ArrowBackIcon fontSize="small" />
+                    <span>Back to List</span>
+                  </span>
+
+                  {/* Mobile / below sm */}
+                  <span className="flex sm:hidden items-center gap-1">
+                    <ClearIcon fontSize="small" />
+                    {/* <span>Back</span> */}
+                  </span>
+                </>
               }
-              // className="text-sm font-medium text-blue-600 hover:text-blue-800"
+            // className="text-sm font-medium text-blue-600 hover:text-blue-800"
             />
           </div>
 
@@ -130,9 +140,8 @@ const DeliveryPartnerEdit: React.FC = () => {
                     message: 'Name must be at least 2 characters',
                   },
                 })}
-                className={`block w-full px-3 sm:px-4 py-2 border rounded-lg shadow-sm text-sm sm:text-base focus:outline-none focus:ring-2 focus:ring-blue-300 transition ${
-                  errors.name ? 'border-red-400' : 'border-gray-300'
-                }`}
+                className={`block w-full px-3 sm:px-4 py-2 border rounded-lg shadow-sm text-sm sm:text-base focus:outline-none focus:ring-2 focus:ring-blue-300 transition ${errors.name ? 'border-red-400' : 'border-gray-300'
+                  }`}
                 placeholder="Enter name"
                 aria-invalid={errors.name ? 'true' : 'false'}
               />
@@ -161,9 +170,8 @@ const DeliveryPartnerEdit: React.FC = () => {
                     message: 'Store name must be at least 2 characters',
                   },
                 })}
-                className={`block w-full px-3 sm:px-4 py-2 border rounded-lg shadow-sm text-sm sm:text-base focus:outline-none focus:ring-2 focus:ring-blue-300 transition ${
-                  errors.store ? 'border-red-400' : 'border-gray-300'
-                }`}
+                className={`block w-full px-3 sm:px-4 py-2 border rounded-lg shadow-sm text-sm sm:text-base focus:outline-none focus:ring-2 focus:ring-blue-300 transition ${errors.store ? 'border-red-400' : 'border-gray-300'
+                  }`}
                 placeholder="Enter store name"
                 aria-invalid={errors.store ? 'true' : 'false'}
               />
@@ -187,9 +195,8 @@ const DeliveryPartnerEdit: React.FC = () => {
                 {...register('status', {
                   required: 'Status is required',
                 })}
-                className={`block w-full px-3 sm:px-4 py-2 border rounded-lg shadow-sm text-sm sm:text-base focus:outline-none focus:ring-2 focus:ring-blue-300 transition ${
-                  errors.status ? 'border-red-400' : 'border-gray-300'
-                }`}
+                className={`block w-full px-3 sm:px-4 py-2 border rounded-lg shadow-sm text-sm sm:text-base focus:outline-none focus:ring-2 focus:ring-blue-300 transition ${errors.status ? 'border-red-400' : 'border-gray-300'
+                  }`}
                 aria-invalid={errors.status ? 'true' : 'false'}
               >
                 <option value="Verified">Verified</option>
@@ -203,11 +210,11 @@ const DeliveryPartnerEdit: React.FC = () => {
             </div>
 
             {/* Submit Button */}
-            <div className="flex justify-end pt-4">
+            <div className="flex justify-center pt-4">
               <SubmitButton
                 label="Update"
                 isSubmitting={isSubmitting}
-                // className="w-full sm:w-auto px-4 py-2 text-sm sm:text-base"
+              // className="w-full sm:w-auto px-4 py-2 text-sm sm:text-base"
               />
             </div>
           </form>

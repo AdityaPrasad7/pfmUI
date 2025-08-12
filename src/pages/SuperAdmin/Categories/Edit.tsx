@@ -6,6 +6,7 @@ import SubmitButton from '../../../components/button/SubmitBtn';
 import { toast, ToastContainer } from 'react-toastify';
 import { useNavigate, useParams, useLocation } from 'react-router-dom';
 import 'react-toastify/dist/ReactToastify.css';
+import ClearIcon from "@mui/icons-material/Clear";
 
 interface CategoryItem {
   id: number;
@@ -107,19 +108,26 @@ const EditCategory: React.FC = () => {
         theme="light"
         style={{ zIndex: 9999 }}
       />
-      <div className="bg-gradient-to-br px-4 py-8 sm:px-6 md:px-10 min-h-[60vh] w-[40rem] max-w-[40rem] m-auto">
+      <div className="bg-gradient-to-br px-0 py-8 sm:px-6 md:px-10 min-h-[60vh] min-w-[20rem] max-w-[40rem] m-auto">
         <div className="max-w-3xl mx-auto bg-white rounded-xl shadow-md p-6 sm:p-8 border">
           {/* Header */}
-          <div className="mb-8 flex items-center justify-between">
+          <div className="mb-8 flex items-start justify-between">
             <h2 className="text-2xl font-bold text-gray-800">Edit Product Category :{id}</h2>
             <NavigateBtn
               to="/categories"
               label={
-                <span className="flex items-center gap-1">
-                  <ArrowBackIcon fontSize="small" />
-                  <span className="hidden sm:inline">Back to List</span>
-                  <span className="sm:hidden">Back</span>
-                </span>
+                <>
+                  {/* Desktop / sm and up */}
+                  <span className="hidden sm:flex items-center gap-1">
+                    <ArrowBackIcon fontSize="small" />
+                    <span>Back to List</span>
+                  </span>
+
+                  {/* Mobile / below sm */}
+                  <span className="flex sm:hidden items-center gap-1">
+                    <ClearIcon fontSize="small" />
+                  </span>
+                </>
               }
               className="text-sm"
             />
@@ -142,9 +150,8 @@ const EditCategory: React.FC = () => {
                   required: 'Product name is required',
                   minLength: { value: 2, message: 'Name must be at least 2 characters' },
                 })}
-                className={`block w-full px-4 py-2 border rounded-lg shadow-sm sm:text-sm focus:outline-none focus:ring-2 focus:ring-blue-300 transition ${
-                  errors.productName ? 'border-red-400' : 'border-gray-300'
-                }`}
+                className={`block w-full px-4 py-2 border rounded-lg shadow-sm sm:text-sm focus:outline-none focus:ring-2 focus:ring-blue-300 transition ${errors.productName ? 'border-red-400' : 'border-gray-300'
+                  }`}
                 placeholder="Enter product name"
                 aria-invalid={errors.productName ? 'true' : 'false'}
               />
@@ -168,9 +175,8 @@ const EditCategory: React.FC = () => {
                 type="file"
                 accept="image/*"
                 {...register('productImage')}
-                className={`block w-full px-3 py-2 border rounded-lg text-sm cursor-pointer focus:outline-none ${
-                  errors.productImage ? 'border-red-400' : 'border-gray-300'
-                }`}
+                className={`block w-full px-3 py-2 border rounded-lg text-sm cursor-pointer focus:outline-none ${errors.productImage ? 'border-red-400' : 'border-gray-300'
+                  }`}
               />
               {errors.productImage && (
                 <p className="mt-1 text-xs text-red-600" role="alert">
@@ -192,7 +198,7 @@ const EditCategory: React.FC = () => {
             </div>
 
             {/* Submit Button */}
-            <div className="flex justify-end pt-4">
+            <div className="flex justify-center pt-4">
               <SubmitButton
                 label={isSubmitting ? 'Updating...' : 'Update Category'}
                 isSubmitting={isSubmitting}

@@ -125,7 +125,7 @@
 //               </div>
 //             </div>
 
-         
+
 
 //             {/* Submit Button */}
 //             <div className="flex justify-end">
@@ -147,6 +147,7 @@ import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import SubmitButton from '../../../components/button/SubmitBtn';
 import { toast, ToastContainer } from 'react-toastify';
 import { useNavigate } from 'react-router-dom';
+import ClearIcon from '@mui/icons-material/Clear';
 
 interface FormInputs {
   staffName: string;
@@ -180,21 +181,29 @@ const StoreStaffAdd: React.FC = () => {
   return (
     <>
       <ToastContainer />
-      <div className="bg-gradient-to-br px-4 py-8 sm:px-6 md:px-10 min-h-[60vh] max-w-[40rem] m-auto">
+      <div className="bg-gradient-to-br px-0 py-8 sm:px-6 md:px-10 min-h-[60vh] max-w-[40rem] m-auto">
         <div className="max-w-3xl mx-auto bg-white rounded-xl shadow-md p-6 sm:p-8 border">
           {/* Header */}
-          <div className="mb-8 flex items-center justify-between">
+          <div className="mb-8 flex items-start justify-between">
             <h2 className="text-2xl font-bold text-gray-800">
               Add New Delivery Partner
             </h2>
             <NavigateBtn
               to="/delivery-partner"
               label={
-                <span className="flex items-center gap-1">
-                  <ArrowBackIcon fontSize="small" />
-                  <span className="hidden sm:inline">Back to List</span>
-                  <span className="sm:hidden">Back</span>
-                </span>
+                <>
+                  {/* Desktop / sm and up */}
+                  <span className="hidden sm:flex items-center gap-1">
+                    <ArrowBackIcon fontSize="small" />
+                    <span>Back to List</span>
+                  </span>
+
+                  {/* Mobile / below sm */}
+                  <span className="flex sm:hidden items-center gap-1">
+                    <ClearIcon fontSize="small" />
+                    {/* <span>Back</span> */}
+                  </span>
+                </>
               }
               className="text-sm"
             />
@@ -253,9 +262,8 @@ const StoreStaffAdd: React.FC = () => {
                       message: 'Name must be at least 2 characters',
                     },
                   })}
-                  className={`block w-full px-4 py-2 border rounded-lg shadow-sm sm:text-sm focus:outline-none focus:ring-2 focus:ring-blue-300 transition mb-2 ${
-                    errors.staffName ? 'border-red-400' : 'border-gray-300'
-                  }`}
+                  className={`block w-full px-4 py-2 border rounded-lg shadow-sm sm:text-sm focus:outline-none focus:ring-2 focus:ring-blue-300 transition mb-2 ${errors.staffName ? 'border-red-400' : 'border-gray-300'
+                    }`}
                   placeholder="Enter staff name"
                   aria-invalid={errors.staffName ? 'true' : 'false'}
                 />
@@ -284,9 +292,8 @@ const StoreStaffAdd: React.FC = () => {
                       message: 'Store name must be at least 2 characters',
                     },
                   })}
-                  className={`block w-full px-4 py-2 border rounded-lg shadow-sm sm:text-sm focus:outline-none focus:ring-2 focus:ring-blue-300 transition ${
-                    errors.storeName ? 'border-red-400' : 'border-gray-300'
-                  }`}
+                  className={`block w-full px-4 py-2 border rounded-lg shadow-sm sm:text-sm focus:outline-none focus:ring-2 focus:ring-blue-300 transition ${errors.storeName ? 'border-red-400' : 'border-gray-300'
+                    }`}
                   placeholder="Enter store name"
                   aria-invalid={errors.storeName ? 'true' : 'false'}
                 />
@@ -299,10 +306,10 @@ const StoreStaffAdd: React.FC = () => {
             </div>
 
             {/* Submit Button */}
-            <div className="flex justify-end pt-4">
-              <SubmitButton 
-                label={isSubmitting ? "Adding..." : "Add Staff Member"} 
-                isSubmitting={isSubmitting} 
+            <div className="flex justify-center pt-4">
+              <SubmitButton
+                label={isSubmitting ? "Adding..." : "Add Staff Member"}
+                isSubmitting={isSubmitting}
               />
             </div>
           </form>

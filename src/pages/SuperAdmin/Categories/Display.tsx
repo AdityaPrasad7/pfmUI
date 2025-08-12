@@ -79,21 +79,22 @@ const handleDelete = () => {
   return (
     <>
      <ToastContainer />
-    <div className="p-6">
+    <div className="py-6">
       <div className="mb-8">
-        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-5">
-          <div>
+        {/* <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-5"> */}
+         <div className="flex flex-col sm:flex-row md:items-center items-end sm:justify-between gap-5">
+          <div className='w-full'>
             <h1 className="text-2xl font-bold text-gray-800">Product Categories</h1>
           </div>
           <NavigateBtn
             to="/categories/add"
             label={
-              <span className="flex items-center gap-1">
+              <span className="flex items-center gap-1 w-[12rem]">
                 <AddIcon fontSize="small" />
                 <span>Add New Category</span>
               </span>
             }
-            className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg shadow-sm hover:shadow-md transition-all"
+            // className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg shadow-sm hover:shadow-md transition-all"
           />
         </div>
       </div>
