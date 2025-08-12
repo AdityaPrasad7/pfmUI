@@ -60,7 +60,7 @@ const AdminLogin = () => {
       };
 
       localStorage.setItem('superAdminUser', JSON.stringify(userData));
-      toast.success("Login Successfully!", {
+      toast.success("Login Successfull", {
         style: { width: window.innerWidth < 640 ? "250px" : "350px", }
       })
       setTimeout(() => {

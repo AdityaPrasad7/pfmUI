@@ -80,7 +80,7 @@ const Header = () => {
 
     const handleLogout = () => {
 
-        toast.success("Logout Successfully!", {
+        toast.success("Logout Successfull", {
             style: { width: window.innerWidth < 640 ? "250px" : "350px", }
         })
 

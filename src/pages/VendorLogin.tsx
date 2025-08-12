@@ -85,7 +85,7 @@ const StoreLogin = () => {
       };
 
       localStorage.setItem('storeUser', JSON.stringify(userData));
-      toast.success("Login Successfully!", {
+      toast.success("Login Successfull", {
         style: { width: window.innerWidth < 640 ? "250px" : "350px", }
       })
       setTimeout(() => {
@@ -120,7 +120,7 @@ const StoreLogin = () => {
           {/* Header */}
           <div className="pt-8 px-8 text-center relative overflow-hidden">
             <div className="relative z-10">
-              <h1 className="text-3xl font-bold tracking-tight text-white">Store Portal</h1>
+              <h1 className="text-3xl font-bold tracking-tight text-white">Store Login</h1>
               {/* <p className="text-sm text-white/90 mt-2 font-medium">Store Operations and Order Processing</p> */}
             </div>
           </div>
