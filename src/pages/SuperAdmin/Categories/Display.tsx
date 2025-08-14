@@ -51,104 +51,106 @@ const DisplayCategories: React.FC = () => {
     handleClose();
   };
 
-const handleDelete = () => {
-  if (!selectedItem) return;
+  const handleDelete = () => {
+    if (!selectedItem) return;
 
-  const confirmDelete = window.confirm(
-    `Are you sure you want to delete "${selectedItem.name}"?`
-  );
+    const confirmDelete = window.confirm(
+      `Are you sure you want to delete "${selectedItem.name}"?`
+    );
 
-  if (!confirmDelete) return;
+    if (!confirmDelete) return;
 
-  console.log('Deleting item:', selectedItem);
+    console.log('Deleting item:', selectedItem);
 
-  // Show delete success toast
-  toast.success('Product category deleted successfully!', {
-    toastId: 'delete-category-success',
-  });
+    // Show delete success toast
+    toast.success('Product category deleted successfully!', {
+      toastId: 'delete-category-success',
+    });
 
-  // TODO: Add actual delete logic (state update or API call)
-  // Example:
-  // setData((prev) => prev.filter((item) => item.id !== selectedItem.id));
+    // TODO: Add actual delete logic (state update or API call)
+    // Example:
+    // setData((prev) => prev.filter((item) => item.id !== selectedItem.id));
 
-  handleClose();
-};
+    handleClose();
+  };
 
 
 
   return (
     <>
-     <ToastContainer />
-    <div className="py-6">
-      <div className="mb-8">
-        {/* <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-5"> */}
-         <div className="flex flex-col sm:flex-row md:items-center items-end sm:justify-between gap-5">
-          <div className='w-full'>
-            <h1 className="text-2xl font-bold text-gray-800">Product Categories</h1>
-          </div>
-          <NavigateBtn
-            to="/categories/add"
-            label={
-              <span className="flex items-center gap-1 w-[12rem]">
-                <AddIcon fontSize="small" />
-                <span>Add New Category</span>
-              </span>
-            }
-            // className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg shadow-sm hover:shadow-md transition-all"
-          />
-        </div>
-      </div>
-
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
-        {categories.map((item) => (
-          <Card key={item.id} className="relative hover:shadow-lg transition-shadow">
-            <div className="absolute top-2 right-2">
-              <IconButton
-                aria-label="more"
-                aria-controls={`menu-${item.id}`}
-                aria-haspopup="true"
-                onClick={(e) => handleMenuClick(e, item)}
-                size="small"
-              >
-                <MoreVertIcon />
-              </IconButton>
+      <ToastContainer />
+      <div className="py-6">
+        <div className="mb-8">
+          {/* <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-5"> */}
+          <div className="flex flex-col sm:flex-row md:items-center items-end sm:justify-between gap-5">
+            <div className='w-full'>
+              <h1 className="text-2xl font-bold text-gray-800">Product Categories</h1>
             </div>
+            <NavigateBtn
+              to="/categories/add"
+              label={
+                <span className="flex items-center gap-1 w-[12rem]">
+                  <AddIcon fontSize="small" />
+                  <span>Add New Category</span>
+                </span>
+              }
+            // className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg shadow-sm hover:shadow-md transition-all"
+            />
+          </div>
+        </div>
 
-            <CardContent className="flex flex-col items-center p-4">
-              <div className="w-32 h-32 mb-4 flex items-center justify-center">
-                <img 
-                  src={item.image} 
-                  alt={item.name} 
-                  className="max-w-full max-h-full object-contain"
-                />
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6 ">
+          {categories.map((item) => (
+            <Card key={item.id} className="relative hover:shadow-lg transition-shadow">
+              <div className="absolute top-2 right-2">
+                <IconButton
+                  aria-label="more"
+                  aria-controls={`menu-${item.id}`}
+                  aria-haspopup="true"
+                  onClick={(e) => handleMenuClick(e, item)}
+                  size="small"
+                >
+                  <MoreVertIcon />
+                </IconButton>
               </div>
-              <Typography variant="h6" className="text-center font-medium">
-                {item.name}
-              </Typography>
-            </CardContent>
-          </Card>
-        ))}
-      </div>
 
-      <Menu
-        id="category-menu"
-        anchorEl={anchorEl}
-        keepMounted
-        open={Boolean(anchorEl)}
-        onClose={handleClose}
-        PaperProps={{
-          style: {
-            width: '120px',
-          },
-        }}
-      >
-        <MenuItem onClick={handleEdit}>Edit</MenuItem>
-        <MenuItem onClick={handleDelete} className="text-red-500">
-          Delete
-        </MenuItem>
-      </Menu>
-    </div>
-     </>
+              <CardContent className="flex flex-col items-center p-4 bg-gradient-to-r  ">
+                {/* <CardContent className="flex flex-col items-center p-4 bg-gradient-to-r from-[#F47C7C] to-[#EF9F9F]"> */}
+
+                <div className="w-32 h-32 mb-4 flex items-center justify-center">
+                  <img
+                    src={item.image}
+                    alt={item.name}
+                    className="max-w-full max-h-full object-contain"
+                  />
+                </div>
+                <Typography variant="h6" className="text-center font-medium">
+                  {item.name}
+                </Typography>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+
+        <Menu
+          id="category-menu"
+          anchorEl={anchorEl}
+          keepMounted
+          open={Boolean(anchorEl)}
+          onClose={handleClose}
+          PaperProps={{
+            style: {
+              width: '120px',
+            },
+          }}
+        >
+          <MenuItem onClick={handleEdit}>Edit</MenuItem>
+          <MenuItem onClick={handleDelete} className="text-red-500">
+            Delete
+          </MenuItem>
+        </Menu>
+      </div>
+    </>
   );
 };
 

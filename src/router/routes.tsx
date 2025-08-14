@@ -1,6 +1,8 @@
 import { lazy } from 'react';
 import type { AppRoute } from './types';
 import NotFoundPage from '../pages/NotFoundPage';
+import AdminProfile from '../pages/SuperAdmin/Profile';
+import ManagerProfile from '../pages/Manager/Profile';
 
 const DeliveryPartner = lazy(() => import('../pages/Manager/DeliveryPartner'));
 const AddPartner = lazy(() => import('../pages/Manager/DeliveryPartner/AddPartner'));
@@ -35,7 +37,7 @@ export const commonRoutes: AppRoute[] = [
     element: <AdminLogin />,
     layout: 'blank',
   },
-    {
+  {
     path: '*', // Catch-all for unknown routes
     element: <NotFoundPage />,
     layout: 'blank',
@@ -76,6 +78,12 @@ export const commonRoutes: AppRoute[] = [
   },
   // manager role ================================================
   {
+    path: '/manager-dashboard/profile',
+    element: <ManagerProfile />,
+    layout: 'default',
+    role: 'manager',
+  },
+  {
     path: '/manager/live-orders',
     element: <LiveOrders />,
     layout: 'blank',
@@ -106,7 +114,14 @@ export const commonRoutes: AppRoute[] = [
     layout: 'default',
     role: 'manager',
   },
+
   // SuperAdmin routes ==============================================================
+  {
+    path: '/super-admin/profile',
+    element: <AdminProfile />,
+    layout: 'default',
+    role: 'super-admin',
+  },
   {
     path: '/super-admin',
     element: <SuperAdminDashboard />,
