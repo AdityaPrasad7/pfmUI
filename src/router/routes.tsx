@@ -78,7 +78,7 @@ export const commonRoutes: AppRoute[] = [
   },
   // manager role ================================================
   {
-    path: '/manager-dashboard/profile',
+    path: '/manager/profile',
     element: <ManagerProfile />,
     layout: 'default',
     role: 'manager',

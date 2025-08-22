@@ -35,6 +35,7 @@ import IconMenuMore from '../Icon/Menu/IconMenuMore';
 import adminProfile from "../../assets/profile/priya.jpg"
 import managerProfile from "../../assets/profile/young-entrepreneur.jpg"
 import { toast, ToastContainer } from 'react-toastify';
+import { url } from 'inspector';
 
 const Header = () => {
     const location = useLocation();
@@ -45,39 +46,54 @@ const Header = () => {
     const managerUser = JSON.parse(localStorage.getItem('managerUser') || '{}');
     const storeUser = JSON.parse(localStorage.getItem('storeUser') || '{}');
 
+    const path = window.location.pathname;
+
+
     // Determine which user is logged in based on the current path
     let user = null;
-    let userRole = null;
+    let profile = null;
+    let url = null;
 
     // Check based on the current path to avoid conflicts
-    if (window.location.pathname.startsWith('/super-admin') || window.location.pathname.startsWith('/meet-center') || window.location.pathname.startsWith('/delivery-partner') || window.location.pathname.startsWith('/assign-orders') || window.location.pathname.startsWith('/notification') || window.location.pathname.startsWith('/categories')) {
-        if (superAdminUser.role === 'super-admin') {
+    if (
+        path.startsWith("/super-admin") ||
+        path.startsWith("/meet-center") ||
+        path.startsWith("/delivery-partner") ||
+        path.startsWith("/assign-orders") ||
+        path.startsWith("/notification") ||
+        path.startsWith("/categories")
+    ) {
+        if (superAdminUser.role === "super-admin") {
             user = superAdminUser;
-            userRole = superAdminUser.role;
+            profile = adminProfile;
+            url = "super-admin";
         }
-    } else if (window.location.pathname.startsWith('/manager')) {
-        if (managerUser.role === 'manager') {
-            user = managerUser;
-            userRole = managerUser.role;
-        }
-    } else if (window.location.pathname.startsWith('/store')) {
-        if (storeUser.role === 'store') {
-            user = storeUser;
-            userRole = storeUser.role;
-        }
+    } else if (path.startsWith("/manager") && managerUser.role === "manager") {
+        user = managerUser;
+        profile = managerProfile;
+        url = "manager";
+    } else if (path.startsWith("/store") && storeUser.role === "store") {
+        user = storeUser;
+        profile = storeUser.profile || adminProfile; // fallback image if store has no profile
+        url = "store";
     } else {
-        // For dashboard routes, check all user types
-        if (superAdminUser.role === 'super-admin') {
+        // Default dashboard check
+        if (superAdminUser.role === "super-admin") {
             user = superAdminUser;
-            userRole = superAdminUser.role;
-        } else if (managerUser.role === 'manager') {
+            profile = adminProfile;
+            url = "super-admin";
+        } else if (managerUser.role === "manager") {
             user = managerUser;
-            userRole = managerUser.role;
-        } else if (storeUser.role === 'store') {
+            profile = managerProfile;
+            url = "manager";
+        } else if (storeUser.role === "store") {
             user = storeUser;
-            userRole = storeUser.role;
+            profile = storeUser.profile || adminProfile;
+            url = "store";
         }
     }
+
+    if (!user) return null; // No user logged in
 
     const handleLogout = () => {
 
@@ -210,8 +226,8 @@ const Header = () => {
     const { t } = useTranslation();
     const { pathname } = useLocation(); // e.g. "/super-admin/dashboard"
     const role = pathname.split("/")[1]; // "super-admin" or "manager"
-    const profile =
-        role === "super-admin" ? adminProfile : managerProfile;
+    // const profile =
+    //     role === "super-admin" ? adminProfile : managerProfile;
 
     console.log("🚀 ~ Header ~ role:", role)
 
@@ -233,7 +249,7 @@ const Header = () => {
                             </button>
                         </div>
 
-                        *
+
                         <div className="sm:flex-1 ltr:sm:ml-0 ltr:ml-auto sm:rtl:mr-0 rtl:mr-auto flex items-center space-x-1.5 lg:space-x-2 rtl:space-x-reverse dark:text-[#d0d2d6]">
                             <div className="sm:ltr:mr-auto sm:rtl:ml-auto">
                                 {/* <form
@@ -268,22 +284,32 @@ const Header = () => {
                             <div className="dropdown shrink-0 flex">
                                 <Dropdown
                                     offset={[0, 8]}
-                                    placement={`${isRtl ? 'bottom-start' : 'bottom-end'}`}
+                                    placement={`${isRtl ? "bottom-start" : "bottom-end"}`}
                                     btnClassName="relative group block"
-                                    button={<img className="w-9 h-9 rounded-full object-cover saturate-50 group-hover:saturate-100" src={profile} alt="userProfile" />}
+                                    button={
+                                        <img
+                                            className="w-9 h-9 rounded-full object-cover saturate-50 group-hover:saturate-100"
+                                            src={profile}
+                                            alt="userProfile"
+                                        />
+                                    }
                                 >
                                     <ul className="text-dark dark:text-white-dark !py-0 w-[230px] font-semibold dark:text-white-light/90">
                                         <li>
                                             <div className="flex items-center px-4 py-4">
-                                                <Link to={`/${role}/profile`} className=' flex' >
-                                                    <img className="rounded-md w-10 h-10 object-cover" src={profile} alt="userProfile" />
+                                                <Link to={`/${url}/profile`} className="flex">
+                                                    <img
+                                                        className="rounded-md w-10 h-10 object-cover"
+                                                        src={profile}
+                                                        alt="userProfile"
+                                                    />
                                                     <div className="ltr:pl-4 rtl:pr-4 truncate">
-                                                        <h4 className="text-base">
-                                                            {user.name || 'User'}
-                                                            {/* <span className="text-xs bg-success-light rounded text-success px-1 ltr:ml-2 rtl:ml-2">{user.role || 'Guest'}</span> */}
-                                                        </h4>
-                                                        <button type="button" className="text-black/60 hover:text-primary dark:text-dark-light/60 dark:hover:text-white">
-                                                            {user.email || 'user@example.com'}
+                                                        <h4 className="text-base">{user.name || "User"}</h4>
+                                                        <button
+                                                            type="button"
+                                                            className="text-black/60 hover:text-primary dark:text-dark-light/60 dark:hover:text-white"
+                                                        >
+                                                            {user.email || "user@example.com"}
                                                         </button>
                                                     </div>
                                                 </Link>
@@ -291,7 +317,10 @@ const Header = () => {
                                         </li>
 
                                         <li className="border-t border-white-light dark:border-white-light/10">
-                                            <button onClick={handleLogout} className="text-danger !py-3 w-full text-left">
+                                            <button
+                                                onClick={handleLogout}
+                                                className="text-danger !py-3 w-full text-left"
+                                            >
                                                 <IconLogout className="w-4.5 h-4.5 ltr:mr-2 rtl:ml-2 rotate-90 shrink-0" />
                                                 Sign Out
                                             </button>
