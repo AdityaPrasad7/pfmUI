@@ -237,7 +237,7 @@ import LoginIcon from '@mui/icons-material/Login';
 import EmailIcon from '@mui/icons-material/Email';
 import HttpsIcon from '@mui/icons-material/Https';
 import { toast, ToastContainer } from "react-toastify";
-import { callApi } from "../util/admin_api.js";
+import { callApi } from "../util/admin_api";
 
 const AdminLogin = () => {
   const navigate = useNavigate();

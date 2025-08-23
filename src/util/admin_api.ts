@@ -1,7 +1,11 @@
 import axios from "axios";
+import { getConfig } from "../config/environment";
 
-// Base URL from env
-const BASE_URL = import.meta.env.VITE_API_BASE_URL;
+// Get configuration
+const config = getConfig();
+
+// Base URL from config
+const BASE_URL = config.API_BASE_URL;
 
 // Create axios instance
 const API = axios.create({
@@ -11,20 +15,20 @@ console.log("🚀 ~ API:", API)
 
 // Request interceptor → attach access token
 API.interceptors.request.use(
-  (config) => {
+  (config: any) => {
     const accessToken = localStorage.getItem("accessToken");
     if (accessToken) {
       config.headers.Authorization = `Bearer ${accessToken}`;
     }
     return config;
   },
-  (error) => Promise.reject(error)
+  (error: any) => Promise.reject(error)
 );
 
 // Response interceptor → refresh token if access token expired
 API.interceptors.response.use(
-  (response) => response,
-  async (error) => {
+  (response: any) => response,
+  async (error: any) => {
     const originalRequest = error.config;
 
     // Check if token expired (401 Unauthorized)
@@ -47,7 +51,7 @@ API.interceptors.response.use(
         // Retry original request with new token
         originalRequest.headers.Authorization = `Bearer ${newAccessToken}`;
         return API(originalRequest);
-      } catch (err) {
+      } catch (err: any) {
         console.error("Token refresh failed:", err);
         // Optional: logout user
         localStorage.removeItem("accessToken");
@@ -61,7 +65,11 @@ API.interceptors.response.use(
 );
 
 // ✅ Reusable function with validation
-export const callApi = async (endpoint, method = "GET", data = null) => {
+export const callApi = async (
+  endpoint: string, 
+  method: "GET" | "POST" | "PUT" | "DELETE" | "PATCH" = "GET", 
+  data: any = null
+) => {
   try {
     const response = await API({
       url: endpoint,
@@ -69,7 +77,7 @@ export const callApi = async (endpoint, method = "GET", data = null) => {
       data,
     });
     return response.data;
-  } catch (error) {
+  } catch (error: any) {
     console.error("API call failed:", error);
     throw error;
   }

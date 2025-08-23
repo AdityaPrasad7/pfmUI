@@ -3,10 +3,12 @@ import { useNavigate } from "react-router-dom";
 import loginimg from "../assets/login-image/login.jpg";
 import { toast, ToastContainer } from "react-toastify";
 import LoginIcon from '@mui/icons-material/Login';
+import { callApi } from "../util/admin_api";
 
 interface LoginForm {
   phone: string;
   otp: string;
+  userId?: string;
 }
 
 const ManagerLogin = () => {
@@ -22,7 +24,8 @@ const ManagerLogin = () => {
 
   const [formData, setFormData] = useState<LoginForm>({
     phone: '',
-    otp: ''
+    otp: '',
+    userId: ''
   });
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
@@ -54,49 +57,87 @@ const ManagerLogin = () => {
     setIsLoading(true);
     setError('');
 
-    // Simulate API call delay
-    await new Promise(resolve => setTimeout(resolve, 1000));
+    try {
+      // Call backend to send OTP
+      const response = await callApi('/manager/send-otp', 'POST', {
+        phone: formData.phone
+      });
 
-    // Static OTP for demo
-    setOtpSent(true);
-    setShowOtpField(true);
-    setIsLoading(false);
+      console.log('🔍 OTP Response:', response);
+
+      // Store userId from response (handle ApiResponse wrapper)
+      const userId = response.data?.data?.userId || response.data?.userId;
+      console.log('🔍 Extracted userId:', userId);
+      
+      setFormData(prev => ({
+        ...prev,
+        userId: userId
+      }));
+
+      setOtpSent(true);
+      setShowOtpField(true);
+      
+      toast.success("OTP sent successfully!", {
+        style: { width: window.innerWidth < 640 ? "250px" : "350px", }
+      });
+
+    } catch (error: any) {
+      console.error('OTP send error:', error);
+      setError(error.response?.data?.message || 'Failed to send OTP');
+      triggerErrorAnimation();
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    if (!formData.otp || !formData.userId) {
+      setError('Please send OTP first');
+      triggerErrorAnimation();
+      return;
+    }
+
     setIsLoading(true);
     setError('');
 
-    // Simulate API call delay
-    await new Promise(resolve => setTimeout(resolve, 1000));
+    try {
+      // Call backend to verify OTP and login
+      const response = await callApi('/manager/verify-login', 'POST', {
+        phone: formData.phone,
+        otp: formData.otp,
+        userId: formData.userId
+      });
 
-    // Static authentication logic for manager
-    const validCredentials = { phone: '1234567890', otp: '1234' };
-
-    if (formData.phone === validCredentials.phone && formData.otp === validCredentials.otp) {
-      // Store user data in localStorage
+      // Store user data and tokens in localStorage (handle ApiResponse wrapper)
+      const responseData = response.data?.data || response.data;
       const userData = {
         role: 'manager',
         phone: formData.phone,
-        name: 'Store Manager',
+        id: responseData.user.id,
         loginTime: new Date().toISOString()
       };
 
       localStorage.setItem('managerUser', JSON.stringify(userData));
+      localStorage.setItem('accessToken', responseData.accessToken);
+      localStorage.setItem('refreshToken', responseData.refreshToken);
 
-      toast.success("Login Successfull", {
+      toast.success("Login Successful!", {
         style: { width: window.innerWidth < 640 ? "250px" : "350px", }
-      })
+      });
+
       setTimeout(() => {
         navigate('/manager-dashboard');
-      }, 2000)
-    } else {
-      setError('Invalid phone number or OTP');
-      triggerErrorAnimation();
-    }
+      }, 2000);
 
-    setIsLoading(false);
+    } catch (error: any) {
+      console.error('Login error:', error);
+      setError(error.response?.data?.message || 'Login failed');
+      triggerErrorAnimation();
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -211,6 +252,10 @@ const ManagerLogin = () => {
                         )}
                       </button>
                     </div>
+                    {/* Help text for default OTP */}
+                    <p className="text-xs text-white/80 mt-2 text-center">
+                      💡 Default OTP: <span className="font-mono font-bold">2025</span> (for testing)
+                    </p>
                   </div>
 
                   <button
@@ -260,7 +305,7 @@ const ManagerLogin = () => {
                     onClick={() => {
                       setOtpSent(false);
                       setShowOtpField(false);
-                      setFormData({ phone: '', otp: '' });
+                      setFormData({ phone: '', otp: '', userId: '' });
                     }}
                     className="text-sm text-[#fff] font-medium transition-colors no-underline hover:underline"
                   >

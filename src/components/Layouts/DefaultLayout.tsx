@@ -9,6 +9,7 @@ import Setting from './Setting';
 import Sidebar from './Sidebar';
 import Portals from '../../components/Portals';
 
+
 const DefaultLayout = ({ children }: PropsWithChildren) => {
     const themeConfig = useSelector((state: IRootState) => state.themeConfig);
     const dispatch = useDispatch();
@@ -73,6 +74,8 @@ const DefaultLayout = ({ children }: PropsWithChildren) => {
                         </button>
                     )}
                 </div>
+
+
 
                 {/* BEGIN APP SETTING LAUNCHER */}
                 <Setting />

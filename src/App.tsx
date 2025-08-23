@@ -4,6 +4,7 @@ import { IRootState } from './store';
 import { toggleRTL, toggleTheme, toggleLocale, toggleMenu, toggleLayout, toggleAnimation, toggleNavbar, toggleSemidark } from './store/themeConfigSlice';
 import store from './store';
 import "./App.css";
+import ConnectionTest from './utils/connectionTest';
 
 function App({ children }: PropsWithChildren) {
     const themeConfig = useSelector((state: IRootState) => state.themeConfig);
@@ -19,6 +20,23 @@ function App({ children }: PropsWithChildren) {
         dispatch(toggleLocale(localStorage.getItem('i18nextLng') || themeConfig.locale));
         dispatch(toggleSemidark(localStorage.getItem('semidark') || themeConfig.semidark));
     }, [dispatch, themeConfig.theme, themeConfig.menu, themeConfig.layout, themeConfig.rtlClass, themeConfig.animation, themeConfig.navbar, themeConfig.locale, themeConfig.semidark]);
+
+    // Test connections automatically on app startup
+    useEffect(() => {
+        const testConnections = async () => {
+            try {
+                const connectionTest = new ConnectionTest();
+                await connectionTest.testAllConnections();
+            } catch (error) {
+                console.error('Connection test failed:', error);
+            }
+        };
+
+        // Run connection test after a short delay to ensure app is fully loaded
+        const timer = setTimeout(testConnections, 1000);
+        
+        return () => clearTimeout(timer);
+    }, []);
 
     return (
         <div
