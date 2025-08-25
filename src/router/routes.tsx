@@ -3,6 +3,16 @@ import type { AppRoute } from './types';
 import NotFoundPage from '../pages/NotFoundPage';
 import AdminProfile from '../pages/SuperAdmin/Profile';
 import ManagerProfile from '../pages/Manager/Profile';
+import TypeCategoriesDisplay from '../pages/SuperAdmin/Categories/typeCategories/Display';
+import TypeCategoriesAdd from '../pages/SuperAdmin/Categories/typeCategories/Add';
+import TypeCategoriesEdit from '../pages/SuperAdmin/Categories/typeCategories/Edit';
+import SubCategoriesDisplay from '../pages/SuperAdmin/Categories/typeCategories/subCategories/Display';
+import SubCategoriesAdd from '../pages/SuperAdmin/Categories/typeCategories/subCategories/Add';
+import SubCategoriesEdit from '../pages/SuperAdmin/Categories/typeCategories/subCategories/Edit';
+import FullDetails from '../pages/SuperAdmin/Categories/typeCategories/subCategories/FullDetails';
+import DisplayCoupons from '../pages/SuperAdmin/Coupons/Display';
+import AddCoupons from '../pages/SuperAdmin/Coupons/Add';
+import EditCoupons from '../pages/SuperAdmin/Coupons/Edit';
 
 const DeliveryPartner = lazy(() => import('../pages/Manager/DeliveryPartner'));
 const AddPartner = lazy(() => import('../pages/Manager/DeliveryPartner/AddPartner'));
@@ -182,6 +192,7 @@ export const commonRoutes: AppRoute[] = [
     layout: 'default',
     role: 'super-admin',
   },
+  // categories 
   {
     path: '/categories',
     element: <CategoriesDisplay />,
@@ -200,9 +211,77 @@ export const commonRoutes: AppRoute[] = [
     layout: 'default',
     role: 'super-admin',
   },
+
+  // type categories 
+  {
+    path: '/type/categories',
+    element: <TypeCategoriesDisplay />,
+    layout: 'default',
+    role: 'super-admin',
+  },
+  {
+    path: '/type/categories/add',
+    element: <TypeCategoriesAdd />,
+    layout: 'default',
+    role: 'super-admin',
+  },
+  {
+    path: '/type/categories/edit/:id',
+    element: <TypeCategoriesEdit />,
+    layout: 'default',
+    role: 'super-admin',
+  },
+
+  // sub categories 
+  {
+    path: '/sub/categories',
+    element: <SubCategoriesDisplay />,
+    layout: 'default',
+    role: 'super-admin',
+  },
+  {
+    path: '/sub/categories/add',
+    element: <SubCategoriesAdd />,
+    layout: 'default',
+    role: 'super-admin',
+  },
+  {
+    path: '/sub/categories/edit',
+    element: <SubCategoriesEdit />,
+    layout: 'default',
+    role: 'super-admin',
+  },
+  {
+    path: '/sub/categories/full-details',
+    element: <FullDetails />,
+    layout: 'default',
+    role: 'super-admin',
+  },
+  // type categories 
   //   {
   //     path: '/unauthorized',
   //     element: <Unauthorized />,
   //     layout: 'default',
   //   },
+
+  // Coupons
+
+    {
+    path: '/coupons',
+    element: <DisplayCoupons />,
+    layout: 'default',
+    role: 'super-admin',
+  },
+    {
+    path: '/coupons/add',
+    element: <AddCoupons />,
+    layout: 'default',
+    role: 'super-admin',
+  },
+    {
+    path: '/coupons/edit',
+    element: <EditCoupons />,
+    layout: 'default',
+    role: 'super-admin',
+  },
 ];

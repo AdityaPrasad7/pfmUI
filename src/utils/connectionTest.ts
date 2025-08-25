@@ -71,15 +71,15 @@ export class ConnectionTest {
    */
   async testAllConnections(): Promise<void> {
     console.log('🔗 Testing frontend-backend connections...');
-    
+
     // Test backend
     const backendResult = await this.testBackendConnection();
     console.log('📡 Backend API:', backendResult.success ? '✅ Connected' : '❌ Failed');
-    
+
     // Test socket
     const socketResult = await this.testSocketConnection();
     console.log('🔌 Socket Server:', socketResult.success ? '✅ Connected' : '❌ Failed');
-    
+
     if (backendResult.success && socketResult.success) {
       console.log('🎉 All systems connected! Frontend and backend are working properly.');
     } else {
@@ -93,7 +93,7 @@ export class ConnectionTest {
   getConnectionStatus(): { backend: string; socket: string; overall: string } {
     const backend = this.config.API_BASE_URL;
     const socket = this.config.SOCKET_URL;
-    
+
     return {
       backend,
       socket,

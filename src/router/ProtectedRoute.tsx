@@ -12,18 +12,18 @@ const ProtectedRoute = ({ allowedRole, children }: Props) => {
   const superAdminUser = JSON.parse(localStorage.getItem('superAdminUser') || '{}');
   const managerUser = JSON.parse(localStorage.getItem('managerUser') || '{}');
   const storeUser = JSON.parse(localStorage.getItem('storeUser') || '{}');
-  
-  console.log("🔐 ProtectedRoute Debug:");
-  console.log("🔐 superAdminUser:", superAdminUser);
-  console.log("🔐 managerUser:", managerUser);
-  console.log("🔐 storeUser:", storeUser);
-  console.log("🔐 allowedRole:", allowedRole);
-  console.log("🔐 current pathname:", window.location.pathname);
-  
+
+  // console.log("🔐 ProtectedRoute Debug:");
+  // console.log("🔐 superAdminUser:", superAdminUser);
+  // console.log("🔐 managerUser:", managerUser);
+  // console.log("🔐 storeUser:", storeUser);
+  // console.log("🔐 allowedRole:", allowedRole);
+  // console.log("🔐 current pathname:", window.location.pathname);
+
   // Determine which user is logged in based on the current path
   let user = null;
   let userRole = null;
-  
+
   // Check based on the current path to avoid conflicts
   if (window.location.pathname.startsWith('/super-admin') || window.location.pathname.startsWith('/meet-center') || window.location.pathname.startsWith('/delivery-partner') || window.location.pathname.startsWith('/assign-orders') || window.location.pathname.startsWith('/notification') || window.location.pathname.startsWith('/categories')) {
     if (superAdminUser.role === 'super-admin') {
@@ -54,8 +54,8 @@ const ProtectedRoute = ({ allowedRole, children }: Props) => {
     }
   }
 
-  console.log("🔐 Determined user:", user);
-  console.log("🔐 Determined role:", userRole);
+  // console.log("🔐 Determined user:", user);
+  // console.log("🔐 Determined role:", userRole);
 
   // If no user is logged in, redirect to login
   if (!userRole) {
@@ -64,7 +64,7 @@ const ProtectedRoute = ({ allowedRole, children }: Props) => {
   }
 
   if (userRole === allowedRole) {
-    console.log("✅ Role match, rendering component");
+    // console.log("✅ Role match, rendering component");
     return <>{children}</>;
   }
 

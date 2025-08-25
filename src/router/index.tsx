@@ -18,7 +18,7 @@ const allRoutes: AppRoute[] = [
   ...managerRoutes,
 ];
 
-console.log('✅ All Routes:', allRoutes);
+// console.log('✅ All Routes:', allRoutes);
 
 // ✅ Wrap each route with layout and protection
 const finalRoutes = allRoutes.map((route) => {

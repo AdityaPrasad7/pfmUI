@@ -40,6 +40,7 @@ import logoImg from "../../assets/logo/logo.png"
 import NotificationsIcon from '@mui/icons-material/Notifications';
 import LocalShippingIcon from '@mui/icons-material/LocalShipping';
 import CategoryIcon from '@mui/icons-material/Category';
+import ConfirmationNumberIcon from '@mui/icons-material/ConfirmationNumber';
 
 const Sidebar = () => {
     const [currentMenu, setCurrentMenu] = useState<string>('');
@@ -83,44 +84,44 @@ const Sidebar = () => {
     const superAdminUser = JSON.parse(localStorage.getItem('superAdminUser') || '{}');
     const managerUser = JSON.parse(localStorage.getItem('managerUser') || '{}');
     const storeUser = JSON.parse(localStorage.getItem('storeUser') || '{}');
-    
+
     // Determine which user is logged in based on the current path
     let user: any = null;
     let userRole: string | null = null;
-    
+
     // Check based on the current path to avoid conflicts
     if (window.location.pathname.startsWith('/super-admin') || window.location.pathname.startsWith('/meat-center') || window.location.pathname.startsWith('/delivery-partner') || window.location.pathname.startsWith('/assign-orders') || window.location.pathname.startsWith('/notification') || window.location.pathname.startsWith('/categories')) {
-      if (superAdminUser.role === 'super-admin') {
-        user = superAdminUser;
-        userRole = superAdminUser.role;
-      }
+        if (superAdminUser.role === 'super-admin') {
+            user = superAdminUser;
+            userRole = superAdminUser.role;
+        }
     } else if (window.location.pathname.startsWith('/manager')) {
-      if (managerUser.role === 'manager') {
-        user = managerUser;
-        userRole = managerUser.role;
-      }
+        if (managerUser.role === 'manager') {
+            user = managerUser;
+            userRole = managerUser.role;
+        }
     } else if (window.location.pathname.startsWith('/store')) {
-      if (storeUser.role === 'store') {
-        user = storeUser;
-        userRole = storeUser.role;
-      }
+        if (storeUser.role === 'store') {
+            user = storeUser;
+            userRole = storeUser.role;
+        }
     } else {
-      // For dashboard routes, check all user types
-      if (superAdminUser.role === 'super-admin') {
-        user = superAdminUser;
-        userRole = superAdminUser.role;
-      } else if (managerUser.role === 'manager') {
-        user = managerUser;
-        userRole = managerUser.role;
-      } else if (storeUser.role === 'store') {
-        user = storeUser;
-        userRole = storeUser.role;
-      }
+        // For dashboard routes, check all user types
+        if (superAdminUser.role === 'super-admin') {
+            user = superAdminUser;
+            userRole = superAdminUser.role;
+        } else if (managerUser.role === 'manager') {
+            user = managerUser;
+            userRole = managerUser.role;
+        } else if (storeUser.role === 'store') {
+            user = storeUser;
+            userRole = storeUser.role;
+        }
     }
-    
-    console.log("🚀 ~ Sidebar ~ user:", user);
-    console.log("🚀 ~ Sidebar ~ userRole:", userRole);
-    console.log("🚀 ~ Sidebar ~ current pathname:", window.location.pathname);
+
+    // console.log("🚀 ~ Sidebar ~ user:", user);
+    // console.log("🚀 ~ Sidebar ~ userRole:", userRole);
+    // console.log("🚀 ~ Sidebar ~ current pathname:", window.location.pathname);
 
     const getRedirectPath = () => {
         switch (userRole) {
@@ -140,8 +141,8 @@ const Sidebar = () => {
             <nav
                 className={`sidebar fixed min-h-screen h-full top-0 bottom-0 w-[260px] shadow-[5px_0_25px_0_rgba(94,92,154,0.1)] z-50 transition-all duration-300 ${semidark ? 'text-white-dark' : ''}`}
             >
-                                   <div className="color_1  h-full  ">
-                   <div className="flex justify-between items-center px-4 py-1 ">
+                <div className="color_1  h-full  ">
+                    <div className="flex justify-between items-center px-4 py-1 ">
                         <NavLink to={getRedirectPath()} className="main-logo flex items-center shrink-0">
                             <img className=" ml-[3rem] h-[11rem]  flex-none" src={logoImg} alt="logo" />
                             {/* <span className="text-2xl ltr:ml-1.5 rtl:mr-1.5 font-semibold align-middle lg:inline dark:text-white-light">{t('VRISTO')}</span> */}
@@ -158,49 +159,49 @@ const Sidebar = () => {
                     <PerfectScrollbar className="h-[calc(100vh-80px)] relative">
                         <ul className="relative font-semibold space-y-0.5 p-4 py-0">
                             {userRole === 'super-admin' && (
-                            <li className="nav-item">
-                                <ul>
-                                    <li className="nav-item">
+                                <li className="nav-item">
+                                    <ul>
+                                        <li className="nav-item">
                                             <NavLink to="/super-admin" className="group">
-                                            <div className="flex items-center">
+                                                <div className="flex items-center">
                                                     <DashboardIcon className="group-hover:!text-[#F47C7C] shrink-0" />
 
                                                     <span className="ltr:pl-3 rtl:pr-3 text-black dark:text-[#506690] group-hover:text-gray-500 dark:group-hover:text-[#FE8601]">
                                                         {t('Dashboard')}
                                                     </span>
 
-                                            </div>
-                                        </NavLink>
-                                    </li>
-                                    <li className="nav-item">
+                                                </div>
+                                            </NavLink>
+                                        </li>
+                                        <li className="nav-item">
                                             <NavLink to="/meat-center" className="group">
-                                            <div className="flex items-center">
+                                                <div className="flex items-center">
                                                     <AddHomeIcon className="group-hover:!text-[#F47C7C] shrink-0" />
                                                     <span className="ltr:pl-3 rtl:pr-3 text-black dark:text-[#506690] dark:group-hover:text-white-dark">
                                                         {t('Meat Center')}
                                                     </span>
-                                            </div>
-                                        </NavLink>
-                                    </li>
-                                    <li className="nav-item">
+                                                </div>
+                                            </NavLink>
+                                        </li>
+                                        <li className="nav-item">
                                             <NavLink to="/delivery-partner" className="group">
-                                            <div className="flex items-center">
+                                                <div className="flex items-center">
                                                     <HandshakeIcon className="group-hover:!text-[#F47C7C] shrink-0" />
                                                     <span className="ltr:pl-3 rtl:pr-3 text-black dark:text-[#506690] dark:group-hover:text-white-dark">
                                                         {t('Delivery Partner')}
                                                     </span>
-                                            </div>
-                                        </NavLink>
-                                    </li>
+                                                </div>
+                                            </NavLink>
+                                        </li>
 
-                                    <li className="nav-item">
+                                        <li className="nav-item">
                                             <NavLink to="/notification" className="group">
-                                            <div className="flex items-center">
+                                                <div className="flex items-center">
                                                     <NotificationsIcon className="group-hover:!text-[#F47C7C] shrink-0" />
                                                     <span className="ltr:pl-3 rtl:pr-3 text-black dark:text-[#506690] dark:group-hover:text-white-dark">
                                                         {t('Send Notification')}
                                                     </span>
-                                    </div>
+                                                </div>
                                             </NavLink>
                                         </li>
                                         <li className="nav-item">
@@ -213,21 +214,31 @@ const Sidebar = () => {
                                                 </div>
                                             </NavLink>
                                         </li>
+                                        <li className="nav-item">
+                                            <NavLink to="/Coupons" className="group">
+                                                <div className="flex items-center">
+                                                    <ConfirmationNumberIcon className="group-hover:!text-[#F47C7C] shrink-0" />
+                                                    <span className="ltr:pl-3 rtl:pr-3 text-black dark:text-[#506690] dark:group-hover:text-white-dark">
+                                                        {t('Coupons')}
+                                                    </span>
+                                                </div>
+                                            </NavLink>
+                                        </li>
                                     </ul>
                                 </li>
                             )}
 
-                                                        {userRole === 'manager' && (
+                            {userRole === 'manager' && (
                                 <li className="nav-item">
                                     <ul>
                                         <li className="nav-item">
                                             <NavLink to="/manager-dashboard" className="group">
-                                    <div className="flex items-center">
+                                                <div className="flex items-center">
                                                     <DashboardIcon className="group-hover:!text-[#F47C7C] shrink-0" />
                                                     <span className="ltr:pl-3 rtl:pr-3 text-black dark:text-[#506690] dark:group-hover:text-white-dark">
                                                         {t('Manager Dashboard')}
                                                     </span>
-                                    </div>
+                                                </div>
                                             </NavLink>
                                         </li>
                                         <li className="nav-item">

@@ -229,7 +229,7 @@ const Header = () => {
     // const profile =
     //     role === "super-admin" ? adminProfile : managerProfile;
 
-    console.log("🚀 ~ Header ~ role:", role)
+    // console.log("🚀 ~ Header ~ role:", role)
 
     return (
         <>

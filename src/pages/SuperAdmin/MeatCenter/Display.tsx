@@ -20,12 +20,14 @@ import { useNavigate } from 'react-router-dom';
 import 'react-toastify/dist/ReactToastify.css';
 
 type Store = {
-  id: string; // Added for unique identification
+  id: string;
   name: string;
   location: string;
   manager: string;
   latitude: string;
   longitude: string;
+  phone: string;
+  pincode: string;
   products: {
     fish: boolean;
     meat: boolean;
@@ -37,59 +39,83 @@ type Store = {
 const columnHelper = createColumnHelper<Store>();
 
 const MeatCenterDisplay: React.FC = () => {
-  // Initialize data from localStorage or fallback to default data
-  const [data, setData] = useState<Store[]>(() => {
+  // Single useState to manage all store data
+  const [storeData, setStoreData] = useState<{
+    allData: Store[];
+    filteredData: Store[];
+  }>(() => {
     const savedData = localStorage.getItem('meatCenterStores');
+    let initialData: Store[] = [];
     if (savedData) {
-      return JSON.parse(savedData);
+      try {
+        initialData = JSON.parse(savedData);
+        console.log('Loaded from localStorage:', initialData);
+      } catch (error) {
+        console.error('Error parsing localStorage data:', error);
+        toast.error('Failed to load saved data.');
+      }
     }
-    return [
-      {
-        id: '1',
-        name: 'Priya Fresh Meats',
-        location: 'Marathahalli Bridge',
-        manager: 'Sangram Bal',
-        latitude: '12.9716',
-        longitude: '77.5946',
-        products: { fish: true, meat: true, chicken: false, egg: false },
-      },
-      {
-        id: '2',
-        name: 'Aditya Store',
-        location: 'Munnekolala',
-        manager: 'Aditya Rao',
-        latitude: '17.3850',
-        longitude: '78.4867',
-        products: { fish: true, meat: false, chicken: true, egg: true },
-      },
-      {
-        id: '3',
-        name: 'Fresh Farm',
-        location: 'Kundalahalli',
-        manager: 'Meena Kumari',
-        latitude: '19.0760',
-        longitude: '72.8777',
-        products: { fish: false, meat: true, chicken: true, egg: false },
-      },
-      {
-        id: '4',
-        name: 'Organic Delights',
-        location: 'Doddanekundi',
-        manager: 'Rahul Sharma',
-        latitude: '28.7041',
-        longitude: '77.1025',
-        products: { fish: true, meat: true, chicken: true, egg: true },
-      },
-      {
-        id: '5',
-        name: 'City Meat Shop',
-        location: 'Brookefield',
-        manager: 'Priya Patel',
-        latitude: '13.0827',
-        longitude: '80.2707',
-        products: { fish: false, meat: true, chicken: false, egg: false },
-      },
-    ];
+    if (!initialData.length) {
+      initialData = [
+        {
+          id: '1',
+          name: 'Priya Fresh Meats',
+          location: 'Marathahalli Bridge',
+          manager: 'Sangram Bal',
+          latitude: '12.9716',
+          longitude: '77.5946',
+          phone: '+91 98765 43210',
+          pincode: '560037',
+          products: { fish: true, meat: true, chicken: false, egg: false },
+        },
+        {
+          id: '2',
+          name: 'Aditya Store',
+          location: 'Munnekolala',
+          manager: 'Aditya Rao',
+          latitude: '17.3850',
+          longitude: '78.4867',
+          phone: '+91 87654 32109',
+          pincode: '500032',
+          products: { fish: true, meat: false, chicken: true, egg: true },
+        },
+        {
+          id: '3',
+          name: 'Fresh Farm',
+          location: 'Kundalahalli',
+          manager: 'Meena Kumari',
+          latitude: '19.0760',
+          longitude: '72.8777',
+          phone: '+91 76543 21098',
+          pincode: '400069',
+          products: { fish: false, meat: true, chicken: true, egg: false },
+        },
+        {
+          id: '4',
+          name: 'Organic Delights',
+          location: 'Doddanekundi',
+          manager: 'Rahul Sharma',
+          latitude: '28.7041',
+          longitude: '77.1025',
+          phone: '+91 65432 10987',
+          pincode: '110092',
+          products: { fish: true, meat: true, chicken: true, egg: true },
+        },
+        {
+          id: '5',
+          name: 'City Meat Shop',
+          location: 'Brookefield',
+          manager: 'Priya Patel',
+          latitude: '13.0827',
+          longitude: '80.2707',
+          phone: '+91 54321 09876',
+          pincode: '600028',
+          products: { fish: false, meat: true, chicken: false, egg: false },
+        },
+      ];
+      console.log('Using default data:', initialData);
+    }
+    return { allData: initialData, filteredData: initialData };
   });
 
   const [globalFilter, setGlobalFilter] = useState('');
@@ -100,26 +126,29 @@ const MeatCenterDisplay: React.FC = () => {
   const [sorting, setSorting] = useState<{ id: string; desc: boolean }[]>([{ id: 'name', desc: false }]);
   const PAGE_SIZES = [5, 10, 20, 30, 50];
 
-  // Save data to localStorage whenever it changes
+  // Save data to localStorage whenever allData changes
   useEffect(() => {
     try {
-      localStorage.setItem('meatCenterStores', JSON.stringify(data));
+      localStorage.setItem('meatCenterStores', JSON.stringify(storeData.allData));
+      console.log('Saved to localStorage:', storeData.allData);
     } catch (error) {
       console.error('Error saving to localStorage:', error);
       toast.error('Failed to save data.');
     }
-  }, [data]);
+  }, [storeData.allData]);
 
-  // Fuzzy search implementation with enhanced keys
+  // Fuzzy search implementation
   const fuse = useMemo(
     () =>
-      new Fuse(data, {
+      new Fuse(storeData.allData, {
         keys: [
           'name',
           'location',
           'manager',
           'latitude',
           'longitude',
+          'phone',
+          'pincode',
           { name: 'products.fish', getFn: (store) => (store.products.fish ? 'Fish' : '') },
           { name: 'products.meat', getFn: (store) => (store.products.meat ? 'Meat' : '') },
           { name: 'products.chicken', getFn: (store) => (store.products.chicken ? 'Chicken' : '') },
@@ -127,13 +156,26 @@ const MeatCenterDisplay: React.FC = () => {
         ],
         threshold: 0.3,
       }),
-    [data]
+    [storeData.allData]
   );
 
-  const filteredData = useMemo(() => {
-    if (!globalFilter) return data;
-    return fuse.search(globalFilter).map((result) => result.item);
-  }, [data, globalFilter, fuse]);
+  // Update filteredData based on globalFilter
+  useEffect(() => {
+    if (!globalFilter) {
+      setStoreData((prev) => ({ ...prev, filteredData: prev.allData }));
+      console.log('No filter applied, using all data:', storeData.allData);
+    } else {
+      try {
+        const searchResults = fuse.search(globalFilter).map((result) => result.item);
+        setStoreData((prev) => ({ ...prev, filteredData: searchResults }));
+        console.log('Filtered data:', searchResults);
+      } catch (error) {
+        console.error('Error in fuzzy search:', error);
+        toast.error('Error filtering data.');
+        setStoreData((prev) => ({ ...prev, filteredData: prev.allData }));
+      }
+    }
+  }, [globalFilter, fuse]);
 
   const navigate = useNavigate();
 
@@ -148,6 +190,8 @@ const MeatCenterDisplay: React.FC = () => {
           manager: row.manager,
           latitude: row.latitude,
           longitude: row.longitude,
+          phone: row.phone,
+          pincode: row.pincode,
           products: row.products,
         },
       });
@@ -160,7 +204,10 @@ const MeatCenterDisplay: React.FC = () => {
   const handleDelete = (row: Store) => {
     if (window.confirm(`Are you sure you want to delete ${row.name}?`)) {
       try {
-        setData((prev) => prev.filter((store) => store.id !== row.id));
+        setStoreData((prev) => ({
+          allData: prev.allData.filter((store) => store.id !== row.id),
+          filteredData: prev.filteredData.filter((store) => store.id !== row.id),
+        }));
         toast.success(`${row.name} deleted successfully!`);
       } catch (error) {
         console.error('Error deleting store:', error);
@@ -240,18 +287,47 @@ const MeatCenterDisplay: React.FC = () => {
         size: 200,
         enableSorting: true,
       }),
-      columnHelper.accessor('latitude', {
-        header: 'Latitude',
-        cell: (info) => <div className="text-gray-600">{info.getValue()}</div>,
-        size: 150,
+      // columnHelper.accessor('latitude', {
+      //   header: 'Latitude',
+      //   cell: (info) => <div className="text-gray-600">{info.getValue()}</div>,
+      //   size: 150,
+      //   enableSorting: true,
+      // }),
+      // columnHelper.accessor('longitude', {
+      //   header: 'Longitude',
+      //   cell: (info) => <div className="text-gray-600">{info.getValue()}</div>,
+      //   size: 150,
+      //   enableSorting: true,
+      // }),
+      columnHelper.accessor('phone', {
+        header: 'Phone',
+        cell: (info) => (
+          <div className="flex items-center">
+            <svg
+              className="w-4 h-4 mr-2 text-gray-400"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"
+              />
+            </svg>
+            <span className="text-gray-600">{info.getValue()}</span>
+          </div>
+        ),
+        size: 180,
         enableSorting: true,
       }),
-      columnHelper.accessor('longitude', {
-        header: 'Longitude',
-        cell: (info) => <div className="text-gray-600">{info.getValue()}</div>,
-        size: 150,
-        enableSorting: true,
-      }),
+      // columnHelper.accessor('pincode', {
+      //   header: 'Pincode',
+      //   cell: (info) => <div className="text-gray-600">{info.getValue()}</div>,
+      //   size: 150,
+      //   enableSorting: true,
+      // }),
       columnHelper.accessor('products', {
         header: 'Products',
         cell: (info) => {
@@ -308,7 +384,7 @@ const MeatCenterDisplay: React.FC = () => {
   );
 
   const table = useReactTable<Store>({
-    data: filteredData,
+    data: storeData.filteredData,
     columns,
     state: { globalFilter, pagination, sorting },
     onGlobalFilterChange: setGlobalFilter,
@@ -320,6 +396,13 @@ const MeatCenterDisplay: React.FC = () => {
     getSortedRowModel: getSortedRowModel(),
   });
 
+  // Debug table data
+  useEffect(() => {
+    console.log('Table row count:', table.getRowModel().rows.length);
+    console.log('Table rows:', table.getRowModel().rows);
+    console.log('Filtered data length:', storeData.filteredData.length);
+  }, [table, storeData.filteredData]);
+
   return (
     <div className="min-h-screen bg-gray-50 px-0 py-8 sm:px-6 lg:px-8">
       <ToastContainer />
@@ -327,18 +410,17 @@ const MeatCenterDisplay: React.FC = () => {
         {/* Header Section */}
         <div className="mb-8">
           <div className="flex flex-col sm:flex-row md:items-center items-end sm:justify-between gap-5">
-            <div className=' w-full'>
+            <div className="w-full">
               <h1 className="text-2xl font-bold text-gray-800 text-left">Meat Center</h1>
             </div>
             <NavigateBtn
               to="/meat-center/add"
               label={
-                <span className="flex items-center gap-1 min-w-[8rem] ">
+                <span className="flex items-center gap-1 min-w-[8rem]">
                   <AddIcon fontSize="small" />
                   <span>Add New Store</span>
                 </span>
               }
-              // className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg shadow-sm hover:shadow-md transition-all"
             />
           </div>
         </div>
@@ -353,7 +435,7 @@ const MeatCenterDisplay: React.FC = () => {
               </div>
               <input
                 type="text"
-                placeholder="Search stores by name, location, manager, or products..."
+                placeholder="Search stores by name, location, manager, phone, pincode, or products..."
                 value={globalFilter}
                 onChange={(e) => setGlobalFilter(e.target.value)}
                 className="pl-10 pr-4 py-2.5 w-full border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition placeholder-gray-400"
@@ -362,7 +444,7 @@ const MeatCenterDisplay: React.FC = () => {
           </div>
 
           {/* Table Section */}
-          <div className="overflow-x-auto ">
+          <div className="overflow-x-auto">
             <table className="min-w-full divide-y divide-gray-200">
               <thead className="bg-gray-50">
                 {table.getHeaderGroups().map((headerGroup) => (
@@ -442,9 +524,9 @@ const MeatCenterDisplay: React.FC = () => {
               Showing{' '}
               <span className="font-medium">
                 {pagination.pageIndex * pagination.pageSize + 1}-
-                {Math.min((pagination.pageIndex + 1) * pagination.pageSize, filteredData.length)}
+                {Math.min((pagination.pageIndex + 1) * pagination.pageSize, storeData.filteredData.length)}
               </span>{' '}
-              of <span className="font-medium">{filteredData.length}</span> stores
+              of <span className="font-medium">{storeData.filteredData.length}</span> stores
             </div>
             <div className="flex items-center gap-2">
               <button
@@ -458,11 +540,10 @@ const MeatCenterDisplay: React.FC = () => {
                 {Array.from({ length: table.getPageCount() }, (_, i) => (
                   <button
                     key={i}
-                    className={`px-3.5 py-1.5 border rounded-md text-sm font-medium ${
-                      pagination.pageIndex === i
-                        ? 'border-[#EF9F9F] text-[#F47C7C] bg-[#FFF2F2]'
-                        : 'border-gray-200 text-gray-700 hover:bg-gray-50'
-                    }`}
+                    className={`px-3.5 py-1.5 border rounded-md text-sm font-medium ${pagination.pageIndex === i
+                      ? 'border-[#EF9F9F] text-[#F47C7C] bg-[#FFF2F2]'
+                      : 'border-gray-200 text-gray-700 hover:bg-gray-50'
+                      }`}
                     onClick={() => table.setPageIndex(i)}
                   >
                     {i + 1}

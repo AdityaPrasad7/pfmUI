@@ -5,23 +5,24 @@
 // import SubmitButton from '../../../components/button/SubmitBtn';
 // import { toast, ToastContainer } from 'react-toastify';
 // import { useNavigate } from 'react-router-dom';
+// import ClearIcon from '@mui/icons-material/Clear';
 
 // interface FormInputs {
-//   centerName: string;
-//   location: string;
-//   manager: string;
+//   staffName: string;
+//   storeName: string;
+//   // staffId: string;
 // }
 
-// const DeliveryPartnerAdd: React.FC = () => {
+// const StoreStaffAdd: React.FC = () => {
 //   const {
 //     register,
 //     handleSubmit,
 //     formState: { errors, isSubmitting },
 //   } = useForm<FormInputs>({
 //     defaultValues: {
-//       centerName: '',
-//       location: '',
-//       manager: '',
+//       staffName: '',
+//       storeName: '',
+//       // staffId: '',
 //     },
 //   });
 
@@ -29,30 +30,38 @@
 
 //   const onSubmit: SubmitHandler<FormInputs> = (data) => {
 //     console.log('Form Data:', data);
-//     toast.success('Center added successfully!');
+//     toast.success('Staff member added successfully!');
 //     setTimeout(() => {
 //       navigate('/delivery-partner');
-//     }, 3000);
+//     }, 2000);
 //   };
 
 //   return (
 //     <>
 //       <ToastContainer />
-//       <div className="bg-gradient-to-br px-4 py-8 sm:px-6 md:px-10 min-h-[60vh]">
+//       <div className="bg-gradient-to-br px-0 py-8 sm:px-6 md:px-10 min-h-[60vh] max-w-[40rem] m-auto">
 //         <div className="max-w-3xl mx-auto bg-white rounded-xl shadow-md p-6 sm:p-8 border">
 //           {/* Header */}
-//           <div className="mb-8 flex items-center justify-between">
-//             <h2 className="text-2xl sm:text-3xl font-bold text-gray-800">
-//               Add New Partners
+//           <div className="mb-8 flex items-start justify-between">
+//             <h2 className="text-2xl font-bold text-gray-800">
+//               Add New Delivery Partner
 //             </h2>
 //             <NavigateBtn
 //               to="/delivery-partner"
 //               label={
-//                 <span className="flex items-center gap-1">
-//                   <ArrowBackIcon fontSize="small" />
-//                   <span className="hidden sm:inline">Back to List</span>
-//                   <span className="sm:hidden">Back</span>
-//                 </span>
+//                 <>
+//                   {/* Desktop / sm and up */}
+//                   <span className="hidden sm:flex items-center gap-1">
+//                     <ArrowBackIcon fontSize="small" />
+//                     <span>Back to List</span>
+//                   </span>
+
+//                   {/* Mobile / below sm */}
+//                   <span className="flex sm:hidden items-center gap-1">
+//                     <ClearIcon fontSize="small" />
+//                     {/* <span>Back</span> */}
+//                   </span>
+//                 </>
 //               }
 //               className="text-sm"
 //             />
@@ -60,76 +69,105 @@
 
 //           {/* Form */}
 //           <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-//             {/* Center Name & Manager in one row on desktop */}
-//             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-//               {/* Center Name */}
+//             {/* Staff ID */}
+//             <div>
+//               <label
+//                 htmlFor="staffId"
+//                 className="block text-sm font-medium text-gray-700 mb-1"
+//               >
+//                 Staff ID
+//               </label>
+//               <input
+//                 id="staffId"
+//                 type="text"
+//                 {...register('staffId', {
+//                   required: 'Staff ID is required',
+//                   pattern: {
+//                     value: /^ST\d{3}$/,
+//                     message: 'Staff ID must be in format ST001'
+//                   }
+//                 })}
+//                 className={`block w-full px-4 py-2 border rounded-lg shadow-sm sm:text-sm focus:outline-none focus:ring-2 focus:ring-blue-300 transition ${errors.staffId ? 'border-red-400' : 'border-gray-300'
+//                   }`}
+//                 placeholder="Enter staff ID (e.g. ST001)"
+//                 aria-invalid={errors.staffId ? 'true' : 'false'}
+//               />
+//               {errors.staffId && (
+//                 <p className="mt-1 text-xs text-red-600" role="alert">
+//                   {errors.staffId.message}
+//                 </p>
+//               )}
+//             </div>
+
+//             {/* Staff Name & Store Name in one row on desktop */}
+//             <div className="">
+//               {/* Staff Name */}
 //               <div>
 //                 <label
-//                   htmlFor="centerName"
-//                   className="block text-sm font-medium text-gray-700 mb-1"
+//                   htmlFor="staffName"
+//                   className="block text-sm font-medium text-gray-700 mb-2"
 //                 >
-//                    Name
+//                   Staff Name
 //                 </label>
 //                 <input
-//                   id="centerName"
+//                   id="staffName"
 //                   type="text"
-//                   {...register('centerName', {
-//                     required: 'Center name is required',
+//                   {...register('staffName', {
+//                     required: 'Staff name is required',
 //                     minLength: {
 //                       value: 2,
-//                       message: 'Center name must be at least 2 characters',
+//                       message: 'Name must be at least 2 characters',
 //                     },
 //                   })}
-//                   className={`block w-full px-4 py-2 border rounded-lg shadow-sm sm:text-sm focus:outline-none focus:ring-2 focus:ring-blue-300 transition ${
-//                     errors.centerName ? 'border-red-400' : 'border-gray-300'
-//                   }`}
-//                   placeholder="Enter center name"
-//                   aria-invalid={errors.centerName ? 'true' : 'false'}
+//                   className={`block w-full px-4 py-2 border rounded-lg shadow-sm sm:text-sm focus:outline-none focus:ring-2 focus:ring-blue-300 transition mb-2 ${errors.staffName ? 'border-red-400' : 'border-gray-300'
+//                     }`}
+//                   placeholder="Enter staff name"
+//                   aria-invalid={errors.staffName ? 'true' : 'false'}
 //                 />
-//                 {errors.centerName && (
+//                 {errors.staffName && (
 //                   <p className="mt-1 text-xs text-red-600" role="alert">
-//                     {errors.centerName.message}
+//                     {errors.staffName.message}
 //                   </p>
 //                 )}
 //               </div>
 
-//               {/* Manager */}
+//               {/* Store Name */}
 //               <div>
 //                 <label
-//                   htmlFor="manager"
-//                   className="block text-sm font-medium text-gray-700 mb-1"
+//                   htmlFor="storeName"
+//                   className="block text-sm font-medium text-gray-700 mb-2"
 //                 >
 //                   Store Name
 //                 </label>
 //                 <input
-//                   id="manager"
+//                   id="storeName"
 //                   type="text"
-//                   {...register('manager', {
-//                     required: 'Manager name is required',
+//                   {...register('storeName', {
+//                     required: 'Store name is required',
 //                     minLength: {
 //                       value: 2,
-//                       message: 'Manager name must be at least 2 characters',
+//                       message: 'Store name must be at least 2 characters',
 //                     },
 //                   })}
-//                   className={`block w-full px-4 py-2 border rounded-lg shadow-sm sm:text-sm focus:outline-none focus:ring-2 focus:ring-blue-300 transition ${
-//                     errors.manager ? 'border-red-400' : 'border-gray-300'
-//                   }`}
-//                   placeholder="Enter manager name"
-//                   aria-invalid={errors.manager ? 'true' : 'false'}
+//                   className={`block w-full px-4 py-2 border rounded-lg shadow-sm sm:text-sm focus:outline-none focus:ring-2 focus:ring-blue-300 transition ${errors.storeName ? 'border-red-400' : 'border-gray-300'
+//                     }`}
+//                   placeholder="Enter store name"
+//                   aria-invalid={errors.storeName ? 'true' : 'false'}
 //                 />
-//                 {errors.manager && (
+//                 {errors.storeName && (
 //                   <p className="mt-1 text-xs text-red-600" role="alert">
-//                     {errors.manager.message}
+//                     {errors.storeName.message}
 //                   </p>
 //                 )}
 //               </div>
 //             </div>
 
-
-
 //             {/* Submit Button */}
-//             <div className="flex justify-end">
-//               <SubmitButton label="Add Center" isSubmitting={isSubmitting} />
+//             <div className="flex justify-center pt-4">
+//               <SubmitButton
+//                 label={isSubmitting ? "Adding..." : "Add Staff Member"}
+//                 isSubmitting={isSubmitting}
+//               />
 //             </div>
 //           </form>
 //         </div>
@@ -138,9 +176,9 @@
 //   );
 // };
 
-// export default DeliveryPartnerAdd;
+// export default StoreStaffAdd;
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { useForm, SubmitHandler } from 'react-hook-form';
 import NavigateBtn from '../../../components/button/NavigateBtn';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
@@ -148,11 +186,17 @@ import SubmitButton from '../../../components/button/SubmitBtn';
 import { toast, ToastContainer } from 'react-toastify';
 import { useNavigate } from 'react-router-dom';
 import ClearIcon from '@mui/icons-material/Clear';
+import callApi from '../../../util/admin_api';
 
 interface FormInputs {
-  staffName: string;
-  storeName: string;
-  // staffId: string;
+  name: string;
+  phone: string;
+  storeId: string;
+}
+
+interface Store {
+  _id: string;
+  name: string;
 }
 
 const StoreStaffAdd: React.FC = () => {
@@ -162,20 +206,68 @@ const StoreStaffAdd: React.FC = () => {
     formState: { errors, isSubmitting },
   } = useForm<FormInputs>({
     defaultValues: {
-      staffName: '',
-      storeName: '',
-      // staffId: '',
+      name: '',
+      phone: '',
+      storeId: '',
     },
   });
 
+  const [stores, setStores] = useState<Store[]>([]);
+  const [loadingStores, setLoadingStores] = useState(true);
   const navigate = useNavigate();
 
-  const onSubmit: SubmitHandler<FormInputs> = (data) => {
-    console.log('Form Data:', data);
-    toast.success('Staff member added successfully!');
-    setTimeout(() => {
-      navigate('/delivery-partner');
-    }, 2000);
+  // Fetch stores from API
+  useEffect(() => {
+    const fetchStores = async () => {
+      try {
+        setLoadingStores(true);
+        const response = await callApi("/admin/all-store-name", { method: "GET" });
+
+        // Handle different possible response structures
+        let storesData: Store[] = [];
+
+        if (Array.isArray(response)) {
+          // If response is directly an array
+          storesData = response;
+        } else if (response && Array.isArray(response.data)) {
+          // If response has a data property that is an array
+          storesData = response.data;
+        } else if (response && response.data && Array.isArray(response.data.data)) {
+          // If response has nested data structure
+          storesData = response.data.data;
+        }
+
+        console.log("Stores data:", storesData);
+        setStores(storesData);
+      } catch (error) {
+        console.error("Error fetching stores:", error);
+        toast.error("Failed to fetch stores.");
+      } finally {
+        setLoadingStores(false);
+      }
+    };
+
+    fetchStores();
+  }, []);
+
+  const onSubmit: SubmitHandler<FormInputs> = async (data) => {
+    try {
+      console.log('Form Data:', data);
+
+      // Call API to add delivery partner
+      await callApi("/admin/delivery-partners", {
+        method: "POST",
+        data: data
+      });
+
+      toast.success('Delivery partner added successfully!');
+      setTimeout(() => {
+        navigate('/delivery-partner');
+      }, 2000);
+    } catch (error) {
+      console.error("Error adding delivery partner:", error);
+      toast.error("Failed to add delivery partner.");
+    }
   };
 
   return (
@@ -211,104 +303,111 @@ const StoreStaffAdd: React.FC = () => {
 
           {/* Form */}
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-            {/* Staff ID */}
-            {/* <div>
+            {/* Name Field */}
+            <div>
               <label
-                htmlFor="staffId"
-                className="block text-sm font-medium text-gray-700 mb-1"
+                htmlFor="name"
+                className="block text-sm font-medium text-gray-700 mb-2"
               >
-                Staff ID
+                Delivery Partner Name
               </label>
               <input
-                id="staffId"
+                id="name"
                 type="text"
-                {...register('staffId', {
-                  required: 'Staff ID is required',
-                  pattern: {
-                    value: /^ST\d{3}$/,
-                    message: 'Staff ID must be in format ST001'
-                  }
+                {...register('name', {
+                  required: 'Name is required',
+                  minLength: {
+                    value: 2,
+                    message: 'Name must be at least 2 characters',
+                  },
                 })}
-                className={`block w-full px-4 py-2 border rounded-lg shadow-sm sm:text-sm focus:outline-none focus:ring-2 focus:ring-blue-300 transition ${
-                  errors.staffId ? 'border-red-400' : 'border-gray-300'
-                }`}
-                placeholder="Enter staff ID (e.g. ST001)"
-                aria-invalid={errors.staffId ? 'true' : 'false'}
+                className={`block w-full px-4 py-2 border rounded-lg shadow-sm sm:text-sm focus:outline-none focus:ring-2 focus:ring-blue-300 transition mb-2 ${errors.name ? 'border-red-400' : 'border-gray-300'
+                  }`}
+                placeholder="Enter delivery partner name"
+                aria-invalid={errors.name ? 'true' : 'false'}
               />
-              {errors.staffId && (
+              {errors.name && (
                 <p className="mt-1 text-xs text-red-600" role="alert">
-                  {errors.staffId.message}
+                  {errors.name.message}
                 </p>
               )}
-            </div> */}
+            </div>
 
-            {/* Staff Name & Store Name in one row on desktop */}
-            <div className="">
-              {/* Staff Name */}
-              <div>
-                <label
-                  htmlFor="staffName"
-                  className="block text-sm font-medium text-gray-700 mb-2"
-                >
-                  Staff Name
-                </label>
-                <input
-                  id="staffName"
-                  type="text"
-                  {...register('staffName', {
-                    required: 'Staff name is required',
-                    minLength: {
-                      value: 2,
-                      message: 'Name must be at least 2 characters',
-                    },
-                  })}
-                  className={`block w-full px-4 py-2 border rounded-lg shadow-sm sm:text-sm focus:outline-none focus:ring-2 focus:ring-blue-300 transition mb-2 ${errors.staffName ? 'border-red-400' : 'border-gray-300'
-                    }`}
-                  placeholder="Enter staff name"
-                  aria-invalid={errors.staffName ? 'true' : 'false'}
-                />
-                {errors.staffName && (
-                  <p className="mt-1 text-xs text-red-600" role="alert">
-                    {errors.staffName.message}
-                  </p>
-                )}
-              </div>
+            {/* Phone Field */}
+            <div>
+              <label
+                htmlFor="phone"
+                className="block text-sm font-medium text-gray-700 mb-1"
+              >
+                Phone Number
+              </label>
+              <input
+                id="phone"
+                type="tel"
+                {...register('phone', {
+                  required: 'Phone number is required',
+                  pattern: {
+                    value: /^[0-9]{10}$/,
+                    message: 'Please enter a valid 10-digit phone number'
+                  }
+                })}
+                className={`block w-full px-4 py-2 border rounded-lg shadow-sm sm:text-sm focus:outline-none focus:ring-2 focus:ring-blue-300 transition ${errors.phone ? 'border-red-400' : 'border-gray-300'
+                  }`}
+                placeholder="Enter phone number (e.g. 9876543210)"
+                aria-invalid={errors.phone ? 'true' : 'false'}
+              />
+              {errors.phone && (
+                <p className="mt-1 text-xs text-red-600" role="alert">
+                  {errors.phone.message}
+                </p>
+              )}
+            </div>
 
-              {/* Store Name */}
-              <div>
-                <label
-                  htmlFor="storeName"
-                  className="block text-sm font-medium text-gray-700 mb-2"
-                >
-                  Store Name
-                </label>
-                <input
-                  id="storeName"
-                  type="text"
-                  {...register('storeName', {
-                    required: 'Store name is required',
-                    minLength: {
-                      value: 2,
-                      message: 'Store name must be at least 2 characters',
-                    },
+            {/* Store Selection Dropdown */}
+            <div>
+              <label
+                htmlFor="storeId"
+                className="block text-sm font-medium text-gray-700 mb-2"
+              >
+                Store
+              </label>
+              {loadingStores ? (
+                <div className="px-4 py-2 border border-gray-300 rounded-lg">
+                  <p className="text-gray-500">Loading stores...</p>
+                </div>
+              ) : stores && stores.length > 0 ? (
+                <select
+                  id="storeId"
+                  {...register('storeId', {
+                    required: 'Please select a store',
                   })}
-                  className={`block w-full px-4 py-2 border rounded-lg shadow-sm sm:text-sm focus:outline-none focus:ring-2 focus:ring-blue-300 transition ${errors.storeName ? 'border-red-400' : 'border-gray-300'
+                  className={`block w-full px-4 py-2 border rounded-lg shadow-sm sm:text-sm focus:outline-none focus:ring-2 focus:ring-blue-300 transition ${errors.storeId ? 'border-red-400' : 'border-gray-300'
                     }`}
-                  placeholder="Enter store name"
-                  aria-invalid={errors.storeName ? 'true' : 'false'}
-                />
-                {errors.storeName && (
-                  <p className="mt-1 text-xs text-red-600" role="alert">
-                    {errors.storeName.message}
-                  </p>
-                )}
-              </div>
+                  aria-invalid={errors.storeId ? 'true' : 'false'}
+                >
+                  <option value="">Select a store</option>
+                  {stores.map((store) => (
+                    <option key={store._id} value={store._id}>
+                      {store.name}
+                    </option>
+                  ))}
+                </select>
+              ) : (
+                <div className="px-4 py-2 border border-gray-300 rounded-lg">
+                  <p className="text-gray-500">No stores available</p>
+                </div>
+              )}
+              {errors.storeId && (
+                <p className="mt-1 text-xs text-red-600" role="alert">
+                  {errors.storeId.message}
+                </p>
+              )}
             </div>
 
             {/* Submit Button */}
             <div className="flex justify-center pt-4">
               <SubmitButton
-                label={isSubmitting ? "Adding..." : "Add Staff Member"}
+                label={isSubmitting ? "Adding..." : "Add Delivery Partner"}
                 isSubmitting={isSubmitting}
               />
             </div>
