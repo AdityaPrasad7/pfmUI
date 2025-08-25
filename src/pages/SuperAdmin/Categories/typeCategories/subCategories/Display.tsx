@@ -134,7 +134,7 @@ const SubCategoriesDisplay: React.FC = () => {
             console.log(selectedItem, "selectedItem");
 
             const response: AxiosResponse<ApiResponse<unknown>> = await callApi(
-                `/admin/sub-product-categories/${selectedItem.id}`, // ✅ using _id
+                `/admin/sub-product-categories/${selectedItem._id}`, // ✅ using _id
                 {
                     method: 'DELETE',
                     headers: {
@@ -150,7 +150,7 @@ const SubCategoriesDisplay: React.FC = () => {
             // ✅ remove deleted item from state immediately
             setSubCategories((prev) => {
                 console.log("🚀 ~ handleDelete ~ prev:", prev)
-                return prev.filter((item) => item.id !== selectedItem.id);
+                return prev.filter((item) => item._id !== selectedItem._id);
             }
             );
 
@@ -307,7 +307,7 @@ const SubCategoriesDisplay: React.FC = () => {
                                         <MoreVertIcon />
                                     </IconButton>
                                 </div>
-                                <Link to={"/sub/categories/full-details"} state={{ id: item.id }}>
+                                <Link to={"/sub/categories/full-details"} state={{ id: item._id }}>
                                     <CardContent className="flex flex-col items-center p-4">
                                         <div className="w-32 h-32 mb-4 flex items-center justify-center bg-gray-100 rounded-lg">
                                             <img

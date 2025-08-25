@@ -59,8 +59,12 @@ const ManagerLogin = () => {
 
     try {
       // Call backend to send OTP
-      const response = await callApi('/manager/send-otp', 'POST', {
-        phone: formData.phone
+      const response = await callApi({
+        endpoint: '/manager/send-otp',
+        method: 'POST',
+        data: {
+          phone: formData.phone
+        }
       });
 
       console.log('🔍 OTP Response:', response);
@@ -104,10 +108,14 @@ const ManagerLogin = () => {
 
     try {
       // Call backend to verify OTP and login
-      const response = await callApi('/manager/verify-login', 'POST', {
-        phone: formData.phone,
-        otp: formData.otp,
-        userId: formData.userId
+      const response = await callApi({
+        endpoint: '/manager/verify-login',
+        method: 'POST',
+        data: {
+          phone: formData.phone,
+          otp: formData.otp,
+          userId: formData.userId
+        }
       });
 
       // Store user data and tokens in localStorage (handle ApiResponse wrapper)
