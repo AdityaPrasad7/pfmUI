@@ -6,14 +6,19 @@ import SubmitButton from '../../../components/button/SubmitBtn';
 import { toast, ToastContainer } from 'react-toastify';
 import { useLocation, useNavigate } from 'react-router-dom';
 import ClearIcon from '@mui/icons-material/Clear';
+import callApi from '../../../util/admin_api';
+import type { AxiosResponse } from 'axios';
 
-
-type FormInputs = {
-  storeName: string;
+interface FormInputs {
+  name: string;
   location: string;
-  manager: string;
+  managerFirstName: string;
+  managerLastName: string;
+  // managerEmail: string;
+  managerPhone: string;
   latitude: string;
   longitude: string;
+  pincode: string;
   products: {
     chicken: boolean;
     mutton: boolean;
@@ -21,18 +26,28 @@ type FormInputs = {
     fish: boolean;
     meat: boolean;
   };
-};
+}
+
+interface ApiResponse<T> {
+  statusCode: number;
+  success: boolean;
+  message: string;
+  data: T;
+  meta: any | null;
+}
 
 const MeatCenterEdit: React.FC = () => {
   const location = useLocation();
   const navigate = useNavigate();
 
   const state = location.state || {
+    id: '',
     name: '',
     location: '',
     manager: '',
-    latitude: '',
-    longitude: '',
+    lat: '',
+    long: '',
+    pincode: '',
     products: {
       chicken: false,
       mutton: false,
@@ -42,20 +57,27 @@ const MeatCenterEdit: React.FC = () => {
     },
   };
 
-  const defaultValues = useMemo(() => ({
-    storeName: state.name,
-    location: state.location,
-    manager: state.manager,
-    latitude: state.latitude || '',
-    longitude: state.longitude || '',
-    products: {
-      chicken: state.products?.chicken || false,
-      mutton: state.products?.mutton || false,
-      pork: state.products?.pork || false,
-      fish: state.products?.fish || false,
-      meat: state.products?.meat || false,
-    },
-  }), [state]);
+  const defaultValues = useMemo(() => {
+    const [firstName = '', lastName = ''] = state.manager ? state.manager.split(' ') : ['', ''];
+    return {
+      name: state.name || '',
+      location: state.location || '',
+      managerFirstName: firstName,
+      managerLastName: lastName,
+      managerEmail: state.managerEmail || '',
+      managerPhone: state.phone || '',
+      latitude: state.lat ? String(state.lat) : '',
+      longitude: state.long ? String(state.long) : '',
+      pincode: state.pincode || '',
+      products: {
+        chicken: state.products?.chicken || false,
+        mutton: state.products?.mutton || false,
+        pork: state.products?.pork || false,
+        fish: state.products?.fish || false,
+        meat: state.products?.meat || false,
+      },
+    };
+  }, [state]);
 
   const {
     register,
@@ -65,12 +87,45 @@ const MeatCenterEdit: React.FC = () => {
     setValue,
   } = useForm<FormInputs>({ defaultValues });
 
-  const onSubmit: SubmitHandler<FormInputs> = (data) => {
+  const onSubmit: SubmitHandler<FormInputs> = async (data) => {
     console.log('Form Data:', data);
-    toast.success('Store updated successfully!');
-    setTimeout(() => {
-      navigate('/meat-center');
-    }, 3000);
+    try {
+      const response: AxiosResponse<ApiResponse<any>> = await callApi({
+        url: `/admin/meat-centers/${state.id}`,
+        method: 'PATCH',
+        data: {
+          storeName: data.name,
+          location: data.location,
+          managerFirstName: data.managerFirstName,
+          managerLastName: data.managerLastName,
+          // managerEmail: data.managerEmail,
+          managerPhone: data.managerPhone,
+          latitude: data.latitude,
+          longitude: data.longitude,
+          pincode: data.pincode,
+          products: data.products,
+        },
+      });
+
+      if (!response.data.success) {
+        throw new Error(response.data.message || 'Failed to update meat center');
+      }
+
+      toast.success('Store updated successfully!', {
+        position: 'top-right',
+        autoClose: 2000,
+      });
+      setTimeout(() => {
+        navigate('/meat-center');
+      }, 2000);
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : 'Failed to update meat center';
+      console.error('Error updating meat center:', errorMessage);
+      toast.error(errorMessage, {
+        position: 'top-right',
+        autoClose: 3000,
+      });
+    }
   };
 
   const handleProductChange = (product: keyof FormInputs['products']) => {
@@ -100,7 +155,6 @@ const MeatCenterEdit: React.FC = () => {
                   {/* Mobile / below sm */}
                   <span className="flex sm:hidden items-center gap-1">
                     <ClearIcon fontSize="small" />
-                    {/* <span>Back</span> */}
                   </span>
                 </>
               }
@@ -110,64 +164,149 @@ const MeatCenterEdit: React.FC = () => {
 
           {/* Form */}
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-            {/* Store Name & Manager in one row on desktop */}
+            {/* Store Name & Manager Details */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {/* Store Name */}
               <div>
                 <label
-                  htmlFor="storeName"
+                  htmlFor="name"
                   className="block text-sm font-medium text-gray-700 mb-1"
                 >
                   Store Name *
                 </label>
                 <input
-                  id="storeName"
+                  id="name"
                   type="text"
-                  {...register('storeName', {
+                  {...register('name', {
                     required: 'Store name is required',
                     minLength: {
                       value: 2,
                       message: 'Store name must be at least 2 characters',
                     },
                   })}
-                  className={`block w-full px-4 py-2 border rounded-lg shadow-sm sm:text-sm focus:outline-none focus:ring-2 focus:ring-blue-300 transition ${errors.storeName ? 'border-red-400' : 'border-gray-300'
-                    }`}
+                  className={`block w-full px-4 py-2 border rounded-lg shadow-sm sm:text-sm focus:outline-none focus:ring-2 focus:ring-blue-300 transition ${errors.name ? 'border-red-400' : 'border-gray-300'}`}
                   placeholder="Enter store name"
-                  aria-invalid={errors.storeName ? 'true' : 'false'}
+                  aria-invalid={errors.name ? 'true' : 'false'}
                 />
-                {errors.storeName && (
+                {errors.name && (
                   <p className="mt-1 text-xs text-red-600" role="alert">
-                    {errors.storeName.message}
+                    {errors.name.message}
                   </p>
                 )}
               </div>
 
-              {/* Manager */}
+              {/* Manager First Name */}
               <div>
                 <label
-                  htmlFor="manager"
+                  htmlFor="managerFirstName"
                   className="block text-sm font-medium text-gray-700 mb-1"
                 >
-                  Manager *
+                  Manager First Name *
                 </label>
                 <input
-                  id="manager"
+                  id="managerFirstName"
                   type="text"
-                  {...register('manager', {
-                    required: 'Manager name is required',
+                  {...register('managerFirstName', {
+                    required: 'Manager first name is required',
                     minLength: {
                       value: 2,
-                      message: 'Manager name must be at least 2 characters',
+                      message: 'Manager first name must be at least 2 characters',
                     },
                   })}
-                  className={`block w-full px-4 py-2 border rounded-lg shadow-sm sm:text-sm focus:outline-none focus:ring-2 focus:ring-blue-300 transition ${errors.manager ? 'border-red-400' : 'border-gray-300'
-                    }`}
-                  placeholder="Enter manager name"
-                  aria-invalid={errors.manager ? 'true' : 'false'}
+                  className={`block w-full px-4 py-2 border rounded-lg shadow-sm sm:text-sm focus:outline-none focus:ring-2 focus:ring-blue-300 transition ${errors.managerFirstName ? 'border-red-400' : 'border-gray-300'}`}
+                  placeholder="Enter manager first name"
+                  aria-invalid={errors.managerFirstName ? 'true' : 'false'}
                 />
-                {errors.manager && (
+                {errors.managerFirstName && (
                   <p className="mt-1 text-xs text-red-600" role="alert">
-                    {errors.manager.message}
+                    {errors.managerFirstName.message}
+                  </p>
+                )}
+              </div>
+
+              {/* Manager Last Name */}
+              <div>
+                <label
+                  htmlFor="managerLastName"
+                  className="block text-sm font-medium text-gray-700 mb-1"
+                >
+                  Manager Last Name *
+                </label>
+                <input
+                  id="managerLastName"
+                  type="text"
+                  {...register('managerLastName', {
+                    required: 'Manager last name is required',
+                    minLength: {
+                      value: 2,
+                      message: 'Manager last name must be at least 2 characters',
+                    },
+                  })}
+                  className={`block w-full px-4 py-2 border rounded-lg shadow-sm sm:text-sm focus:outline-none focus:ring-2 focus:ring-blue-300 transition ${errors.managerLastName ? 'border-red-400' : 'border-gray-300'}`}
+                  placeholder="Enter manager last name"
+                  aria-invalid={errors.managerLastName ? 'true' : 'false'}
+                />
+                {errors.managerLastName && (
+                  <p className="mt-1 text-xs text-red-600" role="alert">
+                    {errors.managerLastName.message}
+                  </p>
+                )}
+              </div>
+
+              {/* Manager Email */}
+              {/* <div>
+                <label
+                  htmlFor="managerEmail"
+                  className="block text-sm font-medium text-gray-700 mb-1"
+                >
+                  Manager Email *
+                </label>
+                <input
+                  id="managerEmail"
+                  type="email"
+                  {...register('managerEmail', {
+                    required: 'Manager email is required',
+                    pattern: {
+                      value: /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/,
+                      message: 'Enter a valid email address',
+                    },
+                  })}
+                  className={`block w-full px-4 py-2 border rounded-lg shadow-sm sm:text-sm focus:outline-none focus:ring-2 focus:ring-blue-300 transition ${errors.managerEmail ? 'border-red-400' : 'border-gray-300'}`}
+                  placeholder="Enter manager email"
+                  aria-invalid={errors.managerEmail ? 'true' : 'false'}
+                />
+                {errors.managerEmail && (
+                  <p className="mt-1 text-xs text-red-600" role="alert">
+                    {errors.managerEmail.message}
+                  </p>
+                )}
+              </div> */}
+
+              {/* Manager Phone */}
+              <div>
+                <label
+                  htmlFor="managerPhone"
+                  className="block text-sm font-medium text-gray-700 mb-1"
+                >
+                  Manager Phone *
+                </label>
+                <input
+                  id="managerPhone"
+                  type="text"
+                  {...register('managerPhone', {
+                    required: 'Manager phone is required',
+                    pattern: {
+                      value: /^[0-9]{10}$/,
+                      message: 'Enter a valid 10-digit phone number',
+                    },
+                  })}
+                  className={`block w-full px-4 py-2 border rounded-lg shadow-sm sm:text-sm focus:outline-none focus:ring-2 focus:ring-blue-300 transition ${errors.managerPhone ? 'border-red-400' : 'border-gray-300'}`}
+                  placeholder="Enter manager phone number"
+                  aria-invalid={errors.managerPhone ? 'true' : 'false'}
+                />
+                {errors.managerPhone && (
+                  <p className="mt-1 text-xs text-red-600" role="alert">
+                    {errors.managerPhone.message}
                   </p>
                 )}
               </div>
@@ -191,8 +330,7 @@ const MeatCenterEdit: React.FC = () => {
                     message: 'Location must be at least 2 characters',
                   },
                 })}
-                className={`block w-full px-4 py-2 border rounded-lg shadow-sm sm:text-sm focus:outline-none focus:ring-2 focus:ring-blue-300 transition resize-none ${errors.location ? 'border-red-400' : 'border-gray-300'
-                  }`}
+                className={`block w-full px-4 py-2 border rounded-lg shadow-sm sm:text-sm focus:outline-none focus:ring-2 focus:ring-blue-300 transition resize-none ${errors.location ? 'border-red-400' : 'border-gray-300'}`}
                 placeholder="Enter location address"
                 aria-invalid={errors.location ? 'true' : 'false'}
               />
@@ -203,8 +341,8 @@ const MeatCenterEdit: React.FC = () => {
               )}
             </div>
 
-            {/* Latitude & Longitude */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {/* Latitude, Longitude & Pincode */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               <div>
                 <label
                   htmlFor="latitude"
@@ -222,8 +360,7 @@ const MeatCenterEdit: React.FC = () => {
                       message: 'Enter valid latitude (-90 to 90)',
                     },
                   })}
-                  className={`block w-full px-4 py-2 border rounded-lg shadow-sm sm:text-sm focus:outline-none focus:ring-2 focus:ring-blue-300 transition ${errors.latitude ? 'border-red-400' : 'border-gray-300'
-                    }`}
+                  className={`block w-full px-4 py-2 border rounded-lg shadow-sm sm:text-sm focus:outline-none focus:ring-2 focus:ring-blue-300 transition ${errors.latitude ? 'border-red-400' : 'border-gray-300'}`}
                   placeholder="e.g. 12.345678"
                   aria-invalid={errors.latitude ? 'true' : 'false'}
                 />
@@ -251,14 +388,41 @@ const MeatCenterEdit: React.FC = () => {
                       message: 'Enter valid longitude (-180 to 180)',
                     },
                   })}
-                  className={`block w-full px-4 py-2 border rounded-lg shadow-sm sm:text-sm focus:outline-none focus:ring-2 focus:ring-blue-300 transition ${errors.longitude ? 'border-red-400' : 'border-gray-300'
-                    }`}
+                  className={`block w-full px-4 py-2 border rounded-lg shadow-sm sm:text-sm focus:outline-none focus:ring-2 focus:ring-blue-300 transition ${errors.longitude ? 'border-red-400' : 'border-gray-300'}`}
                   placeholder="e.g. 98.765432"
                   aria-invalid={errors.longitude ? 'true' : 'false'}
                 />
                 {errors.longitude && (
                   <p className="mt-1 text-xs text-red-600" role="alert">
                     {errors.longitude.message}
+                  </p>
+                )}
+              </div>
+
+              <div>
+                <label
+                  htmlFor="pincode"
+                  className="block text-sm font-medium text-gray-700 mb-1"
+                >
+                  Pincode *
+                </label>
+                <input
+                  id="pincode"
+                  type="text"
+                  {...register('pincode', {
+                    required: 'Pincode is required',
+                    pattern: {
+                      value: /^[0-9]{6}$/,
+                      message: 'Enter a valid 6-digit pincode',
+                    },
+                  })}
+                  className={`block w-full px-4 py-2 border rounded-lg shadow-sm sm:text-sm focus:outline-none focus:ring-2 focus:ring-blue-300 transition ${errors.pincode ? 'border-red-400' : 'border-gray-300'}`}
+                  placeholder="Enter pincode"
+                  aria-invalid={errors.pincode ? 'true' : 'false'}
+                />
+                {errors.pincode && (
+                  <p className="mt-1 text-xs text-red-600" role="alert">
+                    {errors.pincode.message}
                   </p>
                 )}
               </div>

@@ -96,7 +96,7 @@ const DeliveryPartnerEdit: React.FC = () => {
   const onSubmit: SubmitHandler<FormInputs> = async (data) => {
     try {
       // Call API to update delivery partner
-      const reasponse = await callApi(`/admin/delivery-partners/${data._id}`, {
+      const reasponse = await callApi(`/admin/update-delevery-partners/${data._id}`, {
         method: "PATCH",
         data: {
           name: data.name,
