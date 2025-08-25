@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
 
 // A lightweight print page that renders a QR via a public QR image API
 // and auto-triggers the print dialog when the image is ready.
@@ -7,8 +7,33 @@ import { useNavigate, useParams } from 'react-router-dom';
 const PrintQR: React.FC = () => {
   const navigate = useNavigate();
   const { orderId } = useParams<{ orderId: string }>();
+  const [searchParams] = useSearchParams();
   const [isImageLoaded, setIsImageLoaded] = useState(false);
   const hasPrintedRef = useRef(false);
+
+  // Get orderDetails from query parameters
+  const orderDetailsParam = searchParams.get('orderDetails');
+  const orderDetails = useMemo(() => {
+    if (orderDetailsParam) {
+      try {
+        return JSON.parse(decodeURIComponent(orderDetailsParam));
+      } catch (error) {
+        console.error('Error parsing orderDetails:', error);
+        return [];
+      }
+    }
+    return [];
+  }, [orderDetailsParam]);
+
+  // Extract product IDs from orderDetails
+  const productIds = useMemo(() => {
+    return orderDetails.map((item: any) => ({
+      id: item._id,
+      name: item.name,
+      quantity: item.quantity,
+      price: item.price
+    }));
+  }, [orderDetails]);
 
   const qrPayload = useMemo(() => {
     const id = orderId || '';
@@ -19,9 +44,14 @@ const PrintQR: React.FC = () => {
       store: 'Priya Chicken - Indiranagar',
       action: 'confirm-pickup',
       url: `https://priyafreshmeats.com/pickup/${id}`,
+      // Include product IDs for better identification
+      productIds: productIds,
+      orderSummary: `Order #${id} - Ready for pickup`,
+      totalItems: productIds.length,
+      totalAmount: productIds.reduce((sum: number, item: any) => sum + (item.price * item.quantity), 0)
     };
     return JSON.stringify(payload);
-  }, [orderId]);
+  }, [orderId, productIds]);
 
   const qrImageUrl = useMemo(() => {
     // Using a public QR generation API to avoid extra dependencies
@@ -95,6 +125,27 @@ const PrintQR: React.FC = () => {
             <div className="mt-6">
               <div className="font-mono text-xl">Order: {orderId}</div>
               <div className="text-gray-700">Pickup Code: {orderId.slice(-4)}</div>
+              
+              {/* Display product information */}
+              {productIds.length > 0 && (
+                <div className="mt-4 text-left">
+                  <div className="text-sm font-semibold text-gray-800 mb-2">Products:</div>
+                  <div className="space-y-1">
+                    {productIds.map((product: any, index: number) => (
+                      <div key={product.id} className="text-xs text-gray-600 flex justify-between">
+                        <span>{product.name} (Qty: {product.quantity})</span>
+                        <span className="font-mono">₹{product.price}</span>
+                      </div>
+                    ))}
+                  </div>
+                  <div className="mt-2 pt-2 border-t border-gray-200">
+                    <div className="text-sm font-semibold text-gray-800 flex justify-between">
+                      <span>Total Items: {productIds.length}</span>
+                      <span>Total: ₹{productIds.reduce((sum: number, item: any) => sum + (item.price * item.quantity), 0)}</span>
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
           </div>
         </div>
