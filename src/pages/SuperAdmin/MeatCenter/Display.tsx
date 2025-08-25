@@ -26,6 +26,7 @@
 //   name: string;
 //   location: string;
 //   manager: string;
+//   managerEmail: string;
 //   lat: number;
 //   long: number;
 //   phone: string;
@@ -88,6 +89,7 @@
 //           name: store.name,
 //           location: store.location,
 //           manager: store.manager ? `${store.manager.firstName} ${store.manager.lastName}` : 'N/A',
+//           managerEmail: store.manager?.email || '',
 //           lat: store.lat,
 //           long: store.long,
 //           phone: store.phone,
@@ -130,6 +132,7 @@
 //           'name',
 //           'location',
 //           'manager',
+//           'managerEmail',
 //           'lat',
 //           'long',
 //           'phone',
@@ -166,12 +169,16 @@
 //   const handleEdit = (row: Store) => {
 //     try {
 //       console.log('Editing:', row);
+//       const [firstName = '', lastName = ''] = row.manager ? row.manager.split(' ') : ['', ''];
 //       navigate(`/meat-center/edit/${row.id}`, {
 //         state: {
 //           id: row.id,
 //           name: row.name,
 //           location: row.location,
 //           manager: row.manager,
+//           managerEmail: row.managerEmail,
+//           firstName,
+//           lastName,
 //           lat: row.lat,
 //           long: row.long,
 //           phone: row.phone,
@@ -223,9 +230,6 @@
 //         header: 'Store Name',
 //         cell: (info) => (
 //           <div className="flex items-center">
-//             {/* <div className="bg-[#FFF2F2] text-[#F47C7C] rounded-full w-8 h-8 flex items-center justify-center mr-3">
-//               {info.getValue().split(' ').map((n: string) => n[0]).join('')}
-//             </div> */}
 //             <span className="font-medium text-gray-800">{info.getValue()}</span>
 //           </div>
 //         ),
@@ -568,7 +572,10 @@
 
 // export default MeatCenterDisplay;
 
-import React, { useMemo, useState, useEffect } from 'react';
+"use client"
+
+import type React from "react"
+import { useMemo, useState, useEffect } from "react"
 import {
   useReactTable,
   getCoreRowModel,
@@ -577,176 +584,170 @@ import {
   getSortedRowModel,
   flexRender,
   createColumnHelper,
-  ColumnDef,
-} from '@tanstack/react-table';
-import NavigateBtn from '../../../components/button/NavigateBtn';
-import AddIcon from '@mui/icons-material/Add';
-import ModeEditIcon from '@mui/icons-material/ModeEdit';
-import SearchIcon from '@mui/icons-material/Search';
-import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
-import { toast, ToastContainer } from 'react-toastify';
-import Fuse from 'fuse.js';
-import { useNavigate } from 'react-router-dom';
-import 'react-toastify/dist/ReactToastify.css';
-import callApi from '../../../util/admin_api';
-import type { AxiosResponse } from 'axios';
+  type ColumnDef,
+} from "@tanstack/react-table"
+import NavigateBtn from "../../../components/button/NavigateBtn"
+import AddIcon from "@mui/icons-material/Add"
+import ModeEditIcon from "@mui/icons-material/ModeEdit"
+import SearchIcon from "@mui/icons-material/Search"
+import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline"
+import { toast, ToastContainer } from "react-toastify"
+import Fuse from "fuse.js"
+import { useNavigate } from "react-router-dom"
+import "react-toastify/dist/ReactToastify.css"
+import callApi from "../../../util/admin_api"
+import type { AxiosResponse } from "axios"
 
 type Store = {
-  id: string;
-  name: string;
-  location: string;
-  manager: string;
-  managerEmail: string;
-  lat: number;
-  long: number;
-  phone: string;
-  pincode?: string;
+  _id: string // API returns _id, not id
+  id?: string // Optional for frontend use
+  name: string
+  location: string
+  manager: {
+    firstName: string
+    lastName: string
+    email: string
+  } | null // Manager is an object, not a string
+  managerEmail?: string // Optional for frontend use
+  lat: number
+  long: number
+  phone: string
+  pincode?: string
   products: {
-    fish: boolean;
-    meat: boolean;
-    chicken: boolean;
-    mutton: boolean;
-    pork: boolean;
-  };
-  isActive: boolean;
-  createdAt: string;
-  updatedAt: string;
-};
-
-interface ApiResponse<T> {
-  statusCode: number;
-  success: boolean;
-  message: string;
-  data: T;
-  meta: any | null;
+    fish: boolean
+    meat: boolean
+    chicken: boolean
+    mutton: boolean
+    pork: boolean
+  }
+  isActive: boolean
+  createdAt: string
+  updatedAt: string
 }
 
-const columnHelper = createColumnHelper<Store>();
+interface ApiResponse<T> {
+  statusCode: number
+  success: boolean
+  message: string
+  data: T
+  meta: any | null
+}
+
+const columnHelper = createColumnHelper<Store>()
 
 const MeatCenterDisplay: React.FC = () => {
   const [storeData, setStoreData] = useState<{
-    allData: Store[];
-    filteredData: Store[];
-  }>({ allData: [], filteredData: [] });
-  const [globalFilter, setGlobalFilter] = useState('');
+    allData: Store[]
+    filteredData: Store[]
+  }>({ allData: [], filteredData: [] })
+  const [globalFilter, setGlobalFilter] = useState("")
   const [pagination, setPagination] = useState({
     pageIndex: 0,
     pageSize: 5,
-  });
-  const [sorting, setSorting] = useState<{ id: string; desc: boolean }[]>([{ id: 'name', desc: false }]);
-  const [loading, setLoading] = useState(true);
-  const PAGE_SIZES = [5, 10, 20, 30, 50];
-  const navigate = useNavigate();
+  })
+  const [sorting, setSorting] = useState<{ id: string; desc: boolean }[]>([{ id: "name", desc: false }])
+  const [loading, setLoading] = useState(true)
+  const PAGE_SIZES = [5, 10, 20, 30, 50]
+  const navigate = useNavigate()
 
   // Fetch meat centers from API
   useEffect(() => {
     const fetchMeatCenters = async () => {
-      console.log('Fetching meat centers...');
+      console.log("Fetching meat centers...")
       try {
-        setLoading(true);
+        setLoading(true)
         const response: AxiosResponse<ApiResponse<Store[]>> = await callApi({
-          url: '/admin/meat-centers',
-          method: 'GET',
-        });
+          url: "/admin/meat-centers",
+          method: "GET",
+        })
 
         if (!response.data.success || !Array.isArray(response.data.data)) {
-          throw new Error(response.data.message || 'Invalid API response format');
+          throw new Error(response.data.message || "Invalid API response format")
         }
 
         // Map API response to Store type
         const formattedData: Store[] = response.data.data.map((store) => ({
-          id: store._id,
-          name: store.name,
-          location: store.location,
-          manager: store.manager ? `${store.manager.firstName} ${store.manager.lastName}` : 'N/A',
-          managerEmail: store.manager?.email || '',
-          lat: store.lat,
-          long: store.long,
-          phone: store.phone,
-          pincode: store.pincode,
-          products: {
-            fish: store.products.fish,
-            meat: store.products.meat,
-            chicken: store.products.chicken,
-            mutton: store.products.mutton,
-            pork: store.products.pork,
-          },
-          isActive: store.isActive,
-          createdAt: store.createdAt,
-          updatedAt: store.updatedAt,
-        }));
+          ...store, // Keep all original properties including _id
+          id: store._id, // Add id for frontend compatibility
+          manager: store.manager, // Keep manager as object
+          managerEmail: store.manager?.email || "", // Extract email for convenience
+        }))
 
-        setStoreData({ allData: formattedData, filteredData: formattedData });
-        console.log('Fetched meat centers:', formattedData);
+        setStoreData({ allData: formattedData, filteredData: formattedData })
+        console.log("Fetched meat centers:", formattedData)
       } catch (error: unknown) {
-        const errorMessage = error instanceof Error ? error.message : 'Failed to fetch meat centers';
-        console.error('Error fetching meat centers:', errorMessage);
+        const errorMessage = error instanceof Error ? error.message : "Failed to fetch meat centers"
+        console.error("Error fetching meat centers:", errorMessage)
         toast.error(errorMessage, {
-          toastId: 'fetch-meat-centers-error',
-          position: 'top-right',
+          toastId: "fetch-meat-centers-error",
+          position: "top-right",
           autoClose: 3000,
-        });
+        })
       } finally {
-        setLoading(false);
+        setLoading(false)
       }
-    };
+    }
 
-    fetchMeatCenters();
-  }, []);
+    fetchMeatCenters()
+  }, [])
 
   // Fuzzy search implementation
   const fuse = useMemo(
     () =>
       new Fuse(storeData.allData, {
         keys: [
-          'name',
-          'location',
-          'manager',
-          'managerEmail',
-          'lat',
-          'long',
-          'phone',
-          'pincode',
-          { name: 'products.fish', getFn: (store) => (store.products.fish ? 'Fish' : '') },
-          { name: 'products.meat', getFn: (store) => (store.products.meat ? 'Meat' : '') },
-          { name: 'products.chicken', getFn: (store) => (store.products.chicken ? 'Chicken' : '') },
-          { name: 'products.mutton', getFn: (store) => (store.products.mutton ? 'Mutton' : '') },
-          { name: 'products.pork', getFn: (store) => (store.products.pork ? 'Pork' : '') },
+          "name",
+          "location",
+          { name: "manager.firstName", getFn: (store) => store.manager?.firstName || "" },
+          { name: "manager.lastName", getFn: (store) => store.manager?.lastName || "" },
+          { name: "manager.email", getFn: (store) => store.manager?.email || "" },
+          "lat",
+          "long",
+          "phone",
+          "pincode",
+          { name: "products.fish", getFn: (store) => (store.products.fish ? "Fish" : "") },
+          { name: "products.meat", getFn: (store) => (store.products.meat ? "Meat" : "") },
+          { name: "products.chicken", getFn: (store) => (store.products.chicken ? "Chicken" : "") },
+          { name: "products.mutton", getFn: (store) => (store.products.mutton ? "Mutton" : "") },
+          { name: "products.pork", getFn: (store) => (store.products.pork ? "Pork" : "") },
         ],
         threshold: 0.3,
       }),
-    [storeData.allData]
-  );
+    [storeData.allData],
+  )
 
   // Update filteredData based on globalFilter
   useEffect(() => {
     if (!globalFilter) {
-      setStoreData((prev) => ({ ...prev, filteredData: prev.allData }));
-      console.log('No filter applied, using all data:', storeData.allData);
+      setStoreData((prev) => ({ ...prev, filteredData: prev.allData }))
+      console.log("No filter applied, using all data:", storeData.allData)
     } else {
       try {
-        const searchResults = fuse.search(globalFilter).map((result) => result.item);
-        setStoreData((prev) => ({ ...prev, filteredData: searchResults }));
-        console.log('Filtered data:', searchResults);
+        const searchResults = fuse.search(globalFilter).map((result) => result.item)
+        setStoreData((prev) => ({ ...prev, filteredData: searchResults }))
+        console.log("Filtered data:", searchResults)
       } catch (error) {
-        console.error('Error in fuzzy search:', error);
-        toast.error('Error filtering data.');
-        setStoreData((prev) => ({ ...prev, filteredData: prev.allData }));
+        console.error("Error in fuzzy search:", error)
+        toast.error("Error filtering data.")
+        setStoreData((prev) => ({ ...prev, filteredData: prev.allData }))
       }
     }
-  }, [globalFilter, fuse]);
+  }, [globalFilter, fuse])
 
   const handleEdit = (row: Store) => {
     try {
-      console.log('Editing:', row);
-      const [firstName = '', lastName = ''] = row.manager ? row.manager.split(' ') : ['', ''];
-      navigate(`/meat-center/edit/${row.id}`, {
+      console.log("Editing:", row)
+      const firstName = row.manager?.firstName || ""
+      const lastName = row.manager?.lastName || ""
+      const managerName = row.manager ? `${firstName} ${lastName}` : ""
+
+      navigate(`/meat-center/edit/${row.id || row._id}`, {
         state: {
-          id: row.id,
+          id: row.id || row._id,
           name: row.name,
           location: row.location,
-          manager: row.manager,
-          managerEmail: row.managerEmail,
+          manager: managerName,
+          managerEmail: row.manager?.email || "",
           firstName,
           lastName,
           lat: row.lat,
@@ -755,49 +756,50 @@ const MeatCenterDisplay: React.FC = () => {
           pincode: row.pincode,
           products: row.products,
         },
-      });
+      })
     } catch (error) {
-      console.error('Error navigating to edit:', error);
-      toast.error('Failed to initiate edit.');
+      console.error("Error navigating to edit:", error)
+      toast.error("Failed to initiate edit.")
     }
-  };
+  }
 
   const handleDelete = async (row: Store) => {
     if (window.confirm(`Are you sure you want to delete ${row.name}?`)) {
       try {
         const response: AxiosResponse<ApiResponse<unknown>> = await callApi({
-          url: `/admin/meat-centers/${row.id}`,
-          method: 'DELETE',
-        });
+          url: `/admin/meat-centers/${row.id || row._id}`, // Handle both id formats
+          method: "DELETE",
+        })
 
         if (!response.data.success) {
-          throw new Error(response.data.message || 'Failed to delete meat center');
+          throw new Error(response.data.message || "Failed to delete meat center")
         }
 
+        const storeId = row.id || row._id
         setStoreData((prev) => ({
-          allData: prev.allData.filter((store) => store.id !== row.id),
-          filteredData: prev.filteredData.filter((store) => store.id !== row.id),
-        }));
-        toast.success(`${row.name} deleted successfully!`);
+          allData: prev.allData.filter((store) => (store.id || store._id) !== storeId),
+          filteredData: prev.filteredData.filter((store) => (store.id || store._id) !== storeId),
+        }))
+        toast.success(`${row.name} deleted successfully!`)
       } catch (error: unknown) {
-        const errorMessage = error instanceof Error ? error.message : 'Failed to delete meat center';
-        console.error('Error deleting meat center:', errorMessage);
+        const errorMessage = error instanceof Error ? error.message : "Failed to delete meat center"
+        console.error("Error deleting meat center:", errorMessage)
         toast.error(errorMessage, {
-          position: 'top-right',
+          position: "top-right",
           autoClose: 3000,
-        });
+        })
       }
     }
-  };
+  }
 
   useEffect(() => {
-    setPagination((prev) => ({ ...prev, pageIndex: 0 }));
-  }, [globalFilter]);
+    setPagination((prev) => ({ ...prev, pageIndex: 0 }))
+  }, [globalFilter])
 
   const columns = useMemo<ColumnDef<Store, any>[]>(
     () => [
-      columnHelper.accessor('name', {
-        header: 'Store Name',
+      columnHelper.accessor("name", {
+        header: "Store Name",
         cell: (info) => (
           <div className="flex items-center">
             <span className="font-medium text-gray-800">{info.getValue()}</span>
@@ -806,28 +808,18 @@ const MeatCenterDisplay: React.FC = () => {
         size: 250,
         enableSorting: true,
       }),
-      columnHelper.accessor('location', {
-        header: 'Location',
+      columnHelper.accessor("location", {
+        header: "Location",
         cell: (info) => (
           <div className="flex items-center">
-            <svg
-              className="w-4 h-4 mr-2 text-gray-400"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
+            <svg className="w-4 h-4 mr-2 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path
                 strokeLinecap="round"
                 strokeLinejoin="round"
                 strokeWidth={2}
                 d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"
               />
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"
-              />
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
             </svg>
             <span className="text-gray-600">{info.getValue()}</span>
           </div>
@@ -835,39 +827,33 @@ const MeatCenterDisplay: React.FC = () => {
         size: 180,
         enableSorting: true,
       }),
-      columnHelper.accessor('manager', {
-        header: 'Manager',
-        cell: (info) => (
-          <div className="flex items-center">
-            <svg
-              className="w-4 h-4 mr-2 text-gray-400"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
-              />
-            </svg>
-            <span className="text-gray-600">{info.getValue()}</span>
-          </div>
-        ),
+      columnHelper.accessor("manager", {
+        header: "Manager",
+        cell: (info) => {
+          const manager = info.getValue()
+          const managerName = manager ? `${manager.firstName} ${manager.lastName}` : "N/A"
+          return (
+            <div className="flex items-center">
+              <svg className="w-4 h-4 mr-2 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
+                />
+              </svg>
+              <span className="text-gray-600">{managerName}</span>
+            </div>
+          )
+        },
         size: 200,
         enableSorting: true,
       }),
-      columnHelper.accessor('phone', {
-        header: 'Phone',
+      columnHelper.accessor("phone", {
+        header: "Phone",
         cell: (info) => (
           <div className="flex items-center">
-            <svg
-              className="w-4 h-4 mr-2 text-gray-400"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
+            <svg className="w-4 h-4 mr-2 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path
                 strokeLinecap="round"
                 strokeLinejoin="round"
@@ -881,16 +867,16 @@ const MeatCenterDisplay: React.FC = () => {
         size: 180,
         enableSorting: true,
       }),
-      columnHelper.accessor('products', {
-        header: 'Products',
+      columnHelper.accessor("products", {
+        header: "Products",
         cell: (info) => {
-          const products = info.getValue();
-          const activeProducts = [];
-          if (products.fish) activeProducts.push('Fish');
-          if (products.meat) activeProducts.push('Meat');
-          if (products.chicken) activeProducts.push('Chicken');
-          if (products.mutton) activeProducts.push('Mutton');
-          if (products.pork) activeProducts.push('Pork');
+          const products = info.getValue()
+          const activeProducts = []
+          if (products.fish) activeProducts.push("Fish")
+          if (products.meat) activeProducts.push("Meat")
+          if (products.chicken) activeProducts.push("Chicken")
+          if (products.mutton) activeProducts.push("Mutton")
+          if (products.pork) activeProducts.push("Pork")
           return (
             <div className="flex flex-wrap gap-1">
               {activeProducts.map((product, index) => (
@@ -902,13 +888,13 @@ const MeatCenterDisplay: React.FC = () => {
                 </span>
               ))}
             </div>
-          );
+          )
         },
         size: 200,
         enableSorting: false,
       }),
       {
-        id: 'actions',
+        id: "actions",
         header: () => <div className="text-center w-full">Actions</div>,
         cell: ({ row }) => (
           <div className="flex justify-center gap-2">
@@ -934,8 +920,8 @@ const MeatCenterDisplay: React.FC = () => {
         enableSorting: false,
       },
     ],
-    []
-  );
+    [],
+  )
 
   const table = useReactTable<Store>({
     data: storeData.filteredData,
@@ -948,21 +934,21 @@ const MeatCenterDisplay: React.FC = () => {
     getFilteredRowModel: getFilteredRowModel(),
     getPaginationRowModel: getPaginationRowModel(),
     getSortedRowModel: getSortedRowModel(),
-  });
+  })
 
   // Debug table data
   useEffect(() => {
-    console.log('Table row count:', table.getRowModel().rows.length);
-    console.log('Table rows:', table.getRowModel().rows);
-    console.log('Filtered data length:', storeData.filteredData.length);
-  }, [table, storeData.filteredData]);
+    console.log("Table row count:", table.getRowModel().rows.length)
+    console.log("Table rows:", table.getRowModel().rows)
+    console.log("Filtered data length:", storeData.filteredData.length)
+  }, [table, storeData.filteredData])
 
   if (loading) {
     return (
       <div className="flex justify-center items-center h-64">
         <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-600"></div>
       </div>
-    );
+    )
   }
 
   return (
@@ -993,7 +979,7 @@ const MeatCenterDisplay: React.FC = () => {
           <div className="flex flex-col sm:flex-row gap-4 p-6 border-b border-gray-100">
             <div className="relative flex-1">
               <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                <SearchIcon className="text-gray-400" style={{ fontSize: '1.2rem' }} />
+                <SearchIcon className="text-gray-400" style={{ fontSize: "1.2rem" }} />
               </div>
               <input
                 type="text"
@@ -1023,9 +1009,9 @@ const MeatCenterDisplay: React.FC = () => {
                           {header.column.getCanSort() && (
                             <span className="ml-1">
                               {{
-                                asc: '↑',
-                                desc: '↓',
-                              }[header.column.getIsSorted() as string] ?? '↕'}
+                                asc: "↑",
+                                desc: "↓",
+                              }[header.column.getIsSorted() as string] ?? "↕"}
                             </span>
                           )}
                         </div>
@@ -1052,12 +1038,7 @@ const MeatCenterDisplay: React.FC = () => {
           {table.getRowModel().rows.length === 0 && (
             <div className="p-12 text-center">
               <div className="mx-auto max-w-md">
-                <svg
-                  className="mx-auto h-12 w-12 text-gray-400"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
+                <svg className="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path
                     strokeLinecap="round"
                     strokeLinejoin="round"
@@ -1066,9 +1047,7 @@ const MeatCenterDisplay: React.FC = () => {
                   />
                 </svg>
                 <h3 className="mt-2 text-lg font-medium text-gray-900">No stores found</h3>
-                <p className="mt-1 text-sm text-gray-500">
-                  Try adjusting your search or add a new store.
-                </p>
+                <p className="mt-1 text-sm text-gray-500">Try adjusting your search or add a new store.</p>
                 <div className="mt-6">
                   <NavigateBtn
                     to="/meat-center/add"
@@ -1083,11 +1062,11 @@ const MeatCenterDisplay: React.FC = () => {
           {/* Pagination */}
           <div className="flex flex-col sm:flex-row items-center justify-between px-6 py-4 border-t border-gray-100 bg-gray-50">
             <div className="text-sm text-gray-500 mb-4 sm:mb-0">
-              Showing{' '}
+              Showing{" "}
               <span className="font-medium">
-                {pagination.pageIndex * pagination.pageSize + 1}-
+                {pagination.pageIndex * pagination.pageSize + 1}-{" "}
                 {Math.min((pagination.pageIndex + 1) * pagination.pageSize, storeData.filteredData.length)}
-              </span>{' '}
+              </span>{" "}
               of <span className="font-medium">{storeData.filteredData.length}</span> stores
             </div>
             <div className="flex items-center gap-2">
@@ -1103,8 +1082,8 @@ const MeatCenterDisplay: React.FC = () => {
                   <button
                     key={i}
                     className={`px-3.5 py-1.5 border rounded-md text-sm font-medium ${pagination.pageIndex === i
-                      ? 'border-[#EF9F9F] text-[#F47C7C] bg-[#FFF2F2]'
-                      : 'border-gray-200 text-gray-700 hover:bg-gray-50'
+                        ? "border-[#EF9F9F] text-[#F47C7C] bg-[#FFF2F2]"
+                        : "border-gray-200 text-gray-700 hover:bg-gray-50"
                       }`}
                     onClick={() => table.setPageIndex(i)}
                   >
@@ -1122,7 +1101,7 @@ const MeatCenterDisplay: React.FC = () => {
               <select
                 value={table.getState().pagination.pageSize}
                 onChange={(e) => {
-                  table.setPageSize(Number(e.target.value));
+                  table.setPageSize(Number(e.target.value))
                 }}
                 className="px-2 py-1.5 border border-gray-200 rounded-md text-sm text-gray-700 focus:ring-2 focus:ring-blue-500"
               >
@@ -1137,7 +1116,7 @@ const MeatCenterDisplay: React.FC = () => {
         </div>
       </div>
     </div>
-  );
-};
+  )
+}
 
-export default MeatCenterDisplay;
+export default MeatCenterDisplay
