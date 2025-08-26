@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import storeloginimg from "../assets/login-image/storeloginImg.jpg";
 import { toast, ToastContainer } from "react-toastify";
 import LoginIcon from '@mui/icons-material/Login';
+import { API_CONFIG } from "../config/api.config";
 
 interface LoginForm {
   phone: string;
@@ -31,6 +32,7 @@ const StoreLogin = () => {
   const [shake, setShake] = useState(false);
   const [showOtpField, setShowOtpField] = useState(false);
   const [otpSent, setOtpSent] = useState(false);
+  const [otpUserId, setOtpUserId] = useState<string>('');
 
   const handleInputChange = (field: keyof LoginForm, value: string) => {
     setFormData(prev => ({
@@ -54,49 +56,73 @@ const StoreLogin = () => {
 
     setIsLoading(true);
     setError('');
-
-    // Simulate API call delay
-    await new Promise(resolve => setTimeout(resolve, 1000));
-
-    // Static OTP for demo
-    setOtpSent(true);
-    setShowOtpField(true);
-    setIsLoading(false);
+    try {
+      const response = await fetch(`${API_CONFIG.BASE_URL}/store/send-otp`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ phone: formData.phone })
+      });
+      const data = await response.json();
+      if (!response.ok || !data.success) {
+        throw new Error(data.message || 'Failed to send OTP');
+      }
+      // Save the userId returned by backend – required for verify
+      const userId = (data.data && (data.data.userId || data.data.id)) || '';
+      setOtpUserId(userId);
+      setOtpSent(true);
+      setShowOtpField(true);
+      toast.success('OTP sent successfully');
+    } catch (e) {
+      const message = e instanceof Error ? e.message : 'Failed to send OTP';
+      setError(message);
+      triggerErrorAnimation();
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!otpUserId) {
+      setError('Please request OTP again. (Missing User ID)');
+      triggerErrorAnimation();
+      return;
+    }
     setIsLoading(true);
     setError('');
+    try {
+      const response = await fetch(`${API_CONFIG.BASE_URL}/store/verify-login`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ phone: formData.phone, otp: formData.otp, userId: otpUserId })
+      });
+      const data = await response.json();
+      if (!response.ok || !data.success) {
+        throw new Error(data.message || 'Invalid phone number or OTP');
+      }
 
-    // Simulate API call delay
-    await new Promise(resolve => setTimeout(resolve, 1000));
+      // API may wrap payload in data; support both flat and wrapped
+      const payload = data.data || data;
+      const accessToken = payload.accessToken || payload.tokens?.accessToken;
+      const refreshToken = payload.refreshToken || payload.tokens?.refreshToken;
+      const user = payload.user || payload;
 
-    // Static authentication logic for store
-    const validCredentials = { phone: '1234567890', otp: '1234' };
+      if (!accessToken) throw new Error('Access token missing in response');
 
-    if (formData.phone === validCredentials.phone && formData.otp === validCredentials.otp) {
-      // Store user data in localStorage
-      const userData = {
-        role: 'store',
-        phone: formData.phone,
-        name: 'Store Manager',
-        loginTime: new Date().toISOString()
-      };
+      // Persist
+      localStorage.setItem('storeUser', JSON.stringify({ ...user, role: 'store', accessToken }));
+      if (refreshToken) localStorage.setItem('storeRefreshToken', refreshToken);
+      localStorage.setItem('accessToken', accessToken);
 
-      localStorage.setItem('storeUser', JSON.stringify(userData));
-      toast.success("Login Successfull", {
-        style: { width: window.innerWidth < 640 ? "250px" : "350px", }
-      })
-      setTimeout(() => {
-        navigate('/store/live-orders');
-      }, 2000)
-    } else {
-      setError('Invalid phone number or OTP');
+      toast.success('Login Successful', { style: { width: window.innerWidth < 640 ? '250px' : '350px' } });
+      setTimeout(() => navigate('/store/live-orders'), 800);
+    } catch (e) {
+      const message = e instanceof Error ? e.message : 'Login failed';
+      setError(message);
       triggerErrorAnimation();
+    } finally {
+      setIsLoading(false);
     }
-
-    setIsLoading(false);
   };
 
   return (

@@ -1,13 +1,20 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
+import { API_CONFIG } from '../../../config/api.config';
 
 interface DeliveryPartner {
-    id: string;
+    _id: string;
     name: string;
-    initials: string;
-    phoneNumber: string;
+    phone: string;
     status: 'verified' | 'pending';
+    documentStatus: {
+        idProof: 'verified' | 'pending' | 'rejected';
+        addressProof: 'verified' | 'pending' | 'rejected';
+        vehicleDocuments: 'verified' | 'pending' | 'rejected';
+        drivingLicense: 'verified' | 'pending' | 'rejected';
+        insuranceDocuments: 'verified' | 'pending' | 'rejected';
+    };
 }
 
 const EditPartner: React.FC = () => {
@@ -15,36 +22,111 @@ const EditPartner: React.FC = () => {
     const navigate = useNavigate();
     const { id } = useParams<{ id: string }>();
     const [isLoading, setIsLoading] = useState(false);
+    const [isFetching, setIsFetching] = useState(true);
     const [error, setError] = useState('');
 
     const [formData, setFormData] = useState<DeliveryPartner>({
-        id: '',
+        _id: '',
         name: '',
-        initials: '',
-        phoneNumber: '',
-        status: 'pending'
+        phone: '',
+        status: 'pending',
+        documentStatus: {
+            idProof: 'pending',
+            addressProof: 'pending',
+            vehicleDocuments: 'pending',
+            drivingLicense: 'pending',
+            insuranceDocuments: 'pending'
+        }
     });
 
-    useEffect(() => {
-        if (id) {
-            // Load existing partner data
-            const savedData = localStorage.getItem('deliveryPartners');
-            if (savedData) {
-                const partners = JSON.parse(savedData);
-                const partner = partners.find((p: DeliveryPartner) => p.id === id);
-                if (partner) {
-                    setFormData(partner);
-                } else {
-                    setError('Partner not found');
-                }
+    // Calculate overall status based on document verification
+    const calculateOverallStatus = (documentStatus: any) => {
+        const allVerified = Object.values(documentStatus).every(status => status === 'verified');
+        return allVerified ? 'verified' : 'pending';
+    };
+
+    // Fetch partner data from backend
+    const fetchPartnerData = useCallback(async () => {
+        if (!id) return;
+        
+        try {
+            setIsFetching(true);
+            setError('');
+
+            // Get auth token
+            const managerUser = localStorage.getItem('managerUser');
+            const accessToken = localStorage.getItem('accessToken');
+            const token = accessToken || (managerUser ? JSON.parse(managerUser).accessToken : null);
+
+            if (!token) {
+                setError('Authentication required. Please log in.');
+                return;
             }
+
+            const response = await fetch(`${API_CONFIG.BASE_URL}${API_CONFIG.ENDPOINTS.MANAGER.DELIVERY_PARTNERS}/${id}`, {
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                }
+            });
+
+            if (!response.ok) {
+                throw new Error(`Failed to fetch partner data: ${response.status}`);
+            }
+
+            const data = await response.json();
+            
+            if (data.success && data.data) {
+                // Try to load UI-only stored document statuses if present
+                let storedDocStatus = undefined as any;
+                try {
+                    storedDocStatus = JSON.parse(localStorage.getItem(`dpDocumentStatus:${data.data._id}`) || 'null');
+                } catch {}
+                const effectiveDocStatus = storedDocStatus || data.data.documentStatus || {
+                    idProof: 'pending',
+                    addressProof: 'pending',
+                    vehicleDocuments: 'pending',
+                    drivingLicense: 'pending',
+                    insuranceDocuments: 'pending'
+                };
+
+                setFormData({
+                    _id: data.data._id,
+                    name: data.data.name,
+                    phone: data.data.phone,
+                    status: data.data.status,
+                    documentStatus: effectiveDocStatus
+                });
+                console.log('✅ Partner data fetched successfully:', data.data);
+            } else {
+                throw new Error('No partner data found in response');
+            }
+        } catch (error) {
+            console.error('❌ Error fetching partner data:', error);
+            setError(error instanceof Error ? error.message : 'Failed to fetch partner data');
+        } finally {
+            setIsFetching(false);
         }
     }, [id]);
+
+    useEffect(() => {
+        fetchPartnerData();
+    }, [fetchPartnerData]);
 
     const handleInputChange = (field: keyof DeliveryPartner, value: string) => {
         setFormData(prev => ({
             ...prev,
             [field]: value
+        }));
+    };
+
+    const handleDocumentStatusChange = (documentType: string, status: 'verified' | 'pending' | 'rejected') => {
+        setFormData(prev => ({
+            ...prev,
+            documentStatus: {
+                ...prev.documentStatus,
+                [documentType]: status
+            }
         }));
     };
 
@@ -54,25 +136,75 @@ const EditPartner: React.FC = () => {
         setError('');
 
         try {
-            // Load existing partners
-            const savedData = localStorage.getItem('deliveryPartners');
-            const partners = savedData ? JSON.parse(savedData) : [];
+            // Get auth token
+            const managerUser = localStorage.getItem('managerUser');
+            const accessToken = localStorage.getItem('accessToken');
+            const token = accessToken || (managerUser ? JSON.parse(managerUser).accessToken : null);
 
-            // Find and update the partner
-            const updatedPartners = partners.map((partner: DeliveryPartner) => {
-                if (partner.id === id) {
-                    return { ...formData };
-                }
-                return partner;
+            if (!token) {
+                setError('Authentication required. Please log in.');
+                return;
+            }
+
+            // Calculate overall status
+            const overallStatus = calculateOverallStatus(formData.documentStatus);
+
+            const response = await fetch(`${API_CONFIG.BASE_URL}${API_CONFIG.ENDPOINTS.MANAGER.DELIVERY_PARTNERS}/${id}`, {
+                method: 'PATCH',
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    name: formData.name,
+                    phone: formData.phone,
+                    status: overallStatus,
+                    documentStatus: formData.documentStatus
+                })
             });
 
-            // Save updated data
-            localStorage.setItem('deliveryPartners', JSON.stringify(updatedPartners));
+            if (!response.ok) {
+                let message = 'Failed to update partner';
+                try {
+                    const errorData = await response.json();
+                    message = errorData.message || message;
+                } catch {}
+                if (response.status === 409) {
+                    message = 'A partner with this phone number already exists. Please use a different number.';
+                }
+                throw new Error(message);
+            }
 
-            // Navigate back to list
+            // Also persist per-document statuses in backend via bulk endpoint to update overallDocumentStatus
+            try {
+                const documentsPayload = {
+                    documents: [
+                        { documentType: 'idProof', status: formData.documentStatus.idProof },
+                        { documentType: 'addressProof', status: formData.documentStatus.addressProof },
+                        { documentType: 'vehicleDocuments', status: formData.documentStatus.vehicleDocuments },
+                        { documentType: 'drivingLicense', status: formData.documentStatus.drivingLicense },
+                        { documentType: 'insuranceDocuments', status: formData.documentStatus.insuranceDocuments }
+                    ]
+                };
+                await fetch(`${API_CONFIG.BASE_URL}${API_CONFIG.ENDPOINTS.MANAGER.DELIVERY_PARTNERS}/${id}/documents/bulk`, {
+                    method: 'PATCH',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(documentsPayload)
+                });
+            } catch {}
+
+            // Persist UI document status for future loads
+            try {
+                localStorage.setItem(`dpDocumentStatus:${formData._id}`, JSON.stringify(formData.documentStatus));
+            } catch {}
+
+            console.log('✅ Partner updated successfully');
             navigate('/manager/delivery-partner');
         } catch (err) {
-            setError('Failed to update partner');
+            setError(err instanceof Error ? err.message : 'Failed to update partner');
         } finally {
             setIsLoading(false);
         }
@@ -97,6 +229,21 @@ const EditPartner: React.FC = () => {
                             >
                                 Back to List
                             </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        );
+    }
+
+    if (isFetching) {
+        return (
+            <div className="min-h-screen bg-gradient-to-br from-gray-50 via-blue-50 to-indigo-50 p-6">
+                <div className="max-w-2xl mx-auto">
+                    <div className="bg-white rounded-2xl shadow-xl p-8">
+                        <div className="text-center">
+                            <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-blue-500 mx-auto mb-4"></div>
+                            <div className="text-xl text-gray-600">Loading partner data...</div>
                         </div>
                     </div>
                 </div>
@@ -151,58 +298,25 @@ const EditPartner: React.FC = () => {
                         {/* Form Content */}
                         <div className="p-8">
                             <form onSubmit={handleSubmit} className="space-y-8">
-                                {/* First Row - Staff ID and Full Name */}
+                                {/* First Row - Name and Phone Number */}
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                    {/* Staff ID */}
+                                    {/* Name Field */}
                                     <div className="group">
                                         <label className="block text-sm font-semibold text-gray-700 mb-3 flex items-center">
                                             <div className="w-2 h-2 bg-blue-500 rounded-full mr-3"></div>
-                                            Staff ID
-                                        </label>
-                                        <input
-                                            type="text"
-                                            value={formData.id}
-                                            onChange={(e) => handleInputChange('id', e.target.value)}
-                                            className="w-full px-4 py-3.5 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-300 bg-gray-50 group-hover:bg-white group-hover:border-gray-300"
-                                            required
-                                        />
-                                    </div>
-
-                                    {/* Name */}
-                                    <div className="group">
-                                        <label className="block text-sm font-semibold text-gray-700 mb-3 flex items-center">
-                                            <div className="w-2 h-2 bg-green-500 rounded-full mr-3"></div>
                                             Full Name
                                         </label>
                                         <input
                                             type="text"
                                             value={formData.name}
                                             onChange={(e) => handleInputChange('name', e.target.value)}
-                                            className="w-full px-4 py-3.5 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all duration-300 bg-gray-50 group-hover:bg-white group-hover:border-gray-300"
-                                            required
-                                        />
-                                    </div>
-                                </div>
-
-                                {/* Second Row - Initials and Phone Number */}
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                    {/* Initials */}
-                                    <div className="group">
-                                        <label className="block text-sm font-semibold text-gray-700 mb-3 flex items-center">
-                                            <div className="w-2 h-2 bg-purple-500 rounded-full mr-3"></div>
-                                            Initials
-                                        </label>
-                                        <input
-                                            type="text"
-                                            value={formData.initials}
-                                            onChange={(e) => handleInputChange('initials', e.target.value)}
-                                            className="w-full px-4 py-3.5 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-all duration-300 bg-gray-50 group-hover:bg-white group-hover:border-gray-300"
-                                            placeholder="e.g., JD for John Doe"
+                                            className="w-full px-4 py-3.5 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-300 bg-gray-50 group-hover:bg-white group-hover:border-gray-300"
+                                            placeholder="Enter full name"
                                             required
                                         />
                                     </div>
 
-                                    {/* Phone Number */}
+                                    {/* Phone Number Field */}
                                     <div className="group">
                                         <label className="block text-sm font-semibold text-gray-700 mb-3 flex items-center">
                                             <div className="w-2 h-2 bg-orange-500 rounded-full mr-3"></div>
@@ -210,32 +324,105 @@ const EditPartner: React.FC = () => {
                                         </label>
                                         <input
                                             type="tel"
-                                            value={formData.phoneNumber}
-                                            onChange={(e) => handleInputChange('phoneNumber', e.target.value)}
+                                            value={formData.phone}
+                                            onChange={(e) => handleInputChange('phone', e.target.value)}
                                             className="w-full px-4 py-3.5 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition-all duration-300 bg-gray-50 group-hover:bg-white group-hover:border-gray-300"
+                                            placeholder="+91 98765 43210"
                                             required
                                         />
                                     </div>
                                 </div>
 
-                                {/* Third Row - Status (Full Width) */}
-                                <div className="group">
-                                    <label className="block text-sm font-semibold text-gray-700 mb-3 flex items-center">
-                                        <div className="w-2 h-2 bg-indigo-500 rounded-full mr-3"></div>
-                                        Verification Status
-                                    </label>
-                                    <select
-                                        value={formData.status}
-                                        onChange={(e) => handleInputChange('status', e.target.value as 'verified' | 'pending')}
-                                        className="w-full px-4 py-3.5 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all duration-300 bg-gray-50 group-hover:bg-white group-hover:border-gray-300 appearance-none cursor-pointer"
-                                    >
-                                        <option value="pending">⏳ Pending Documentation</option>
-                                        <option value="verified">✅ Verified & Active</option>
-                                    </select>
-                                    <div className="absolute right-4 top-1/2 transform -translate-y-1/2 pointer-events-none">
-                                        <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                                        </svg>
+                                {/* Document Verification Fields */}
+                                <div className="bg-gray-50 rounded-2xl shadow-inner p-6">
+                                    <h3 className="text-xl font-bold mb-4 text-gray-800">Document Verification Status</h3>
+                                    <p className="text-sm text-gray-600 mb-4">Set the verification status for each required document. Overall status will be automatically calculated.</p>
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                        <div className="group">
+                                            <label className="block text-sm font-semibold text-gray-700 mb-3 flex items-center">
+                                                <div className="w-2 h-2 bg-blue-500 rounded-full mr-3"></div>
+                                                ID Proof
+                                            </label>
+                                            <select
+                                                value={formData.documentStatus.idProof}
+                                                onChange={(e) => handleDocumentStatusChange('idProof', e.target.value as 'verified' | 'pending' | 'rejected')}
+                                                className="w-full px-4 py-3.5 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-300 bg-white group-hover:bg-gray-100"
+                                            >
+                                                <option value="pending">⏳ Pending</option>
+                                                <option value="verified">✅ Verified</option>
+                                                <option value="rejected">❌ Rejected</option>
+                                            </select>
+                                        </div>
+                                        <div className="group">
+                                            <label className="block text-sm font-semibold text-gray-700 mb-3 flex items-center">
+                                                <div className="w-2 h-2 bg-orange-500 rounded-full mr-3"></div>
+                                                Address Proof
+                                            </label>
+                                            <select
+                                                value={formData.documentStatus.addressProof}
+                                                onChange={(e) => handleDocumentStatusChange('addressProof', e.target.value as 'verified' | 'pending' | 'rejected')}
+                                                className="w-full px-4 py-3.5 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition-all duration-300 bg-white group-hover:bg-gray-100"
+                                            >
+                                                <option value="pending">⏳ Pending</option>
+                                                <option value="verified">✅ Verified</option>
+                                                <option value="rejected">❌ Rejected</option>
+                                            </select>
+                                        </div>
+                                        <div className="group">
+                                            <label className="block text-sm font-semibold text-gray-700 mb-3 flex items-center">
+                                                <div className="w-2 h-2 bg-purple-500 rounded-full mr-3"></div>
+                                                Vehicle Documents
+                                            </label>
+                                            <select
+                                                value={formData.documentStatus.vehicleDocuments}
+                                                onChange={(e) => handleDocumentStatusChange('vehicleDocuments', e.target.value as 'verified' | 'pending' | 'rejected')}
+                                                className="w-full px-4 py-3.5 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-all duration-300 bg-white group-hover:bg-gray-100"
+                                            >
+                                                <option value="pending">⏳ Pending</option>
+                                                <option value="verified">✅ Verified</option>
+                                                <option value="rejected">❌ Rejected</option>
+                                            </select>
+                                        </div>
+                                        <div className="group">
+                                            <label className="block text-sm font-semibold text-gray-700 mb-3 flex items-center">
+                                                <div className="w-2 h-2 bg-red-500 rounded-full mr-3"></div>
+                                                Driving License
+                                            </label>
+                                            <select
+                                                value={formData.documentStatus.drivingLicense}
+                                                onChange={(e) => handleDocumentStatusChange('drivingLicense', e.target.value as 'verified' | 'pending' | 'rejected')}
+                                                className="w-full px-4 py-3.5 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-red-500 focus:border-red-500 transition-all duration-300 bg-white group-hover:bg-gray-100"
+                                            >
+                                                <option value="pending">⏳ Pending</option>
+                                                <option value="verified">✅ Verified</option>
+                                                <option value="rejected">❌ Rejected</option>
+                                            </select>
+                                        </div>
+                                        <div className="group">
+                                            <label className="block text-sm font-semibold text-gray-700 mb-3 flex items-center">
+                                                <div className="w-2 h-2 bg-green-500 rounded-full mr-3"></div>
+                                                Insurance Documents
+                                            </label>
+                                            <select
+                                                value={formData.documentStatus.insuranceDocuments}
+                                                onChange={(e) => handleDocumentStatusChange('insuranceDocuments', e.target.value as 'verified' | 'pending' | 'rejected')}
+                                                className="w-full px-4 py-3.5 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all duration-300 bg-white group-hover:bg-gray-100"
+                                            >
+                                                <option value="pending">⏳ Pending</option>
+                                                <option value="verified">✅ Verified</option>
+                                                <option value="rejected">❌ Rejected</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div className="mt-4 p-3 bg-blue-50 rounded-lg border border-blue-200">
+                                        <div className="flex items-center">
+                                            <svg className="w-5 h-5 text-blue-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                            </svg>
+                                            <span className="text-sm text-blue-700">
+                                                <strong>Note:</strong> Overall status will be "Verified" only when all documents are verified. If any document is pending or rejected, status will be "Pending".
+                                            </span>
+                                        </div>
                                     </div>
                                 </div>
 

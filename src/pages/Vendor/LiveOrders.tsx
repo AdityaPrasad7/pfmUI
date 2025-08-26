@@ -194,8 +194,8 @@ const LiveOrders: React.FC = () => {
             items: order.orderDetails?.length || 0,
             total: order.amount || 0,
             time: new Date(order.createdAt).toLocaleTimeString('en-US', {
-              hour: '2-digit',
-              minute: '2-digit',
+      hour: '2-digit',
+      minute: '2-digit',
               hour12: true
             }),
             status: mapBackendStatusToFrontend(order.status),
@@ -300,14 +300,91 @@ const LiveOrders: React.FC = () => {
     return orders.filter(order => order.status === status);
   };
 
-  const moveOrderToNextStage = (orderId: string) => {
-    // For now, just emit the status change and let the backend handle it
-    // The next fetchLiveOrders call will get the updated status
-    socketService.emitOrderStatusChange(orderId, 'preparing');
-    console.log('📤 Manager emitted status change to store:', orderId, '->', 'preparing');
-    
-    // Refresh data from backend to get updated status
-    setTimeout(() => fetchLiveOrders(), 1000);
+  const moveOrderToNextStage = async (orderId: string) => {
+    try {
+      console.log('🚀 LiveOrders: Moving order to next stage:', orderId);
+      setError(null); // Clear previous errors
+      
+      // Get the auth token
+      const managerUser = localStorage.getItem('managerUser');
+      const storeUser = localStorage.getItem('storeUser');
+      const accessToken = localStorage.getItem('accessToken');
+      const token = accessToken || (managerUser ? JSON.parse(managerUser).accessToken : null) || 
+                   (storeUser ? JSON.parse(storeUser).accessToken : null);
+      
+      if (!token) {
+        console.log('❌ LiveOrders: No auth token found for status update');
+        setError('Authentication required for status update');
+        return;
+      }
+
+      // Determine current status and next status
+      const order = orders.find(o => o.id === orderId);
+      if (!order) {
+        console.log('❌ LiveOrders: Order not found for status update');
+        return;
+      }
+
+      let newStatus: string;
+      let newFrontendStatus: Order['status'];
+      let endpoint: string;
+
+      if (order.status === 'new') {
+        // Move from NEW to PREPARING
+        newStatus = 'preparing';
+        newFrontendStatus = 'preparing';
+        endpoint = `${API_CONFIG.BASE_URL}/manager/orders/${orderId}/status`;
+      } else if (order.status === 'preparing') {
+        // Move from PREPARING to AWAITING PICKUP
+        newStatus = 'ready';
+        newFrontendStatus = 'awaiting-pickup';
+        endpoint = `${API_CONFIG.BASE_URL}/manager/orders/${orderId}/status`;
+      } else {
+        console.log('❌ LiveOrders: Cannot move order from status:', order.status);
+        return;
+      }
+
+      console.log('🔄 LiveOrders: Updating order status from', order.status, 'to', newStatus);
+
+      // Update local state immediately for seamless movement
+      setOrders(prevOrders => 
+        prevOrders.map(o => 
+          o.id === orderId 
+            ? { ...o, status: newFrontendStatus }
+            : o
+        )
+      );
+
+      const response = await fetch(endpoint, {
+        method: 'PATCH',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ status: newStatus })
+      });
+
+      if (response.ok) {
+        console.log('✅ LiveOrders: Order status updated successfully');
+        // No need to refresh - local state is already updated
+      } else {
+        // Revert local state if backend update failed
+        setOrders(prevOrders => 
+          prevOrders.map(o => 
+            o.id === orderId 
+              ? { ...o, status: order.status }
+              : o
+          )
+        );
+        
+        const errorData = await response.json();
+        console.log('❌ LiveOrders: Failed to update order status:', errorData);
+        setError(`Failed to update order status: ${errorData.message || 'Unknown error'}`);
+      }
+    } catch (error) {
+      console.error('❌ LiveOrders: Error updating order status:', error);
+      setError('Failed to update order status. Please try again.');
+    }
   };
 
   const showQRCode = (orderId: string) => {
@@ -318,14 +395,72 @@ const LiveOrders: React.FC = () => {
     setShowQR(null);
   };
 
-  const confirmPickup = (orderId: string) => {
-    // For now, just emit the pickup confirmation and let the backend handle it
-    socketService.emitOrderStatusChange(orderId, 'picked-up');
-    console.log('📤 Manager emitted pickup confirmation to store:', orderId);
-    
-    // Refresh data from backend to get updated status
-    setTimeout(() => fetchLiveOrders(), 1000);
+  const confirmPickup = async (orderId: string) => {
+    try {
+      console.log('🚀 LiveOrders: Confirming pickup for order:', orderId);
+      setError(null); // Clear previous errors
+      
+      // Get the auth token
+      const managerUser = localStorage.getItem('managerUser');
+      const storeUser = localStorage.getItem('storeUser');
+      const accessToken = localStorage.getItem('accessToken');
+      const token = accessToken || (managerUser ? JSON.parse(managerUser).accessToken : null) || 
+                   (storeUser ? JSON.parse(storeUser).accessToken : null);
+      
+      if (!token) {
+        console.log('❌ LiveOrders: No auth token found for pickup confirmation');
+        setError('Authentication required for pickup confirmation');
+        return;
+      }
+
+      // Update order status to picked_up
+      const endpoint = `${API_CONFIG.BASE_URL}/manager/orders/${orderId}/status`;
+      
+      console.log('🔄 LiveOrders: Confirming pickup for order:', orderId);
+
+      // Update local state immediately for seamless movement
+      setOrders(prevOrders => 
+        prevOrders.map(o => 
+          o.id === orderId 
+            ? { ...o, status: 'picked-up' }
+            : o
+        )
+      );
+
+      const response = await fetch(endpoint, {
+        method: 'PATCH',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ 
+          status: 'picked_up',
+          pickedUpBy: orderId // This will be set to the delivery partner ID when they scan QR
+        })
+      });
+
+      if (response.ok) {
+        console.log('✅ LiveOrders: Pickup confirmed successfully');
+        // No need to refresh - local state is already updated
     hideQRCode();
+      } else {
+        // Revert local state if backend update failed
+        setOrders(prevOrders => 
+          prevOrders.map(o => 
+            o.id === orderId 
+              ? { ...o, status: 'awaiting-pickup' }
+              : o
+          )
+        );
+        
+        const errorData = await response.json();
+        console.log('❌ LiveOrders: Failed to confirm pickup:', errorData);
+        setError(`Failed to confirm pickup: ${errorData.message || 'Unknown error'}`);
+      }
+    } catch (error) {
+      console.error('❌ LiveOrders: Error confirming pickup:', error);
+      setError('Failed to confirm pickup. Please try again.');
+    }
   };
 
 
@@ -369,15 +504,33 @@ const LiveOrders: React.FC = () => {
 
 
 
-  const OrderCard: React.FC<{ order: Order; isHighlighted?: boolean }> = ({ order, isHighlighted = false }) => (
-    <div 
-      className={`p-4 rounded-lg mb-3 transition-all duration-300 ${
+  const OrderCard: React.FC<{ order: Order; isHighlighted?: boolean }> = ({ order, isHighlighted = false }) => {
+    const [isUpdating, setIsUpdating] = useState(false);
+
+    const handleOrderClick = async () => {
+      if (isManager && order.status !== 'awaiting-pickup' && !isUpdating) {
+        setIsUpdating(true);
+        try {
+          await moveOrderToNextStage(order.id);
+        } finally {
+          setIsUpdating(false);
+        }
+      }
+    };
+
+    return (
+      <div 
+        className={`p-4 rounded-lg mb-3 transition-all duration-500 ease-in-out transform ${
         isHighlighted 
           ? 'bg-red-600 shadow-lg scale-105' 
           : 'bg-gray-700'
-      } ${isManager ? 'cursor-pointer hover:bg-gray-600' : ''}`}
-      onClick={() => isManager && order.status !== 'awaiting-pickup' && moveOrderToNextStage(order.id)}
+        } ${isManager && order.status !== 'awaiting-pickup' ? 'cursor-pointer hover:bg-gray-600 hover:scale-105' : ''}`}
+        onClick={handleOrderClick}
       title={isManager && order.status !== 'awaiting-pickup' ? "Click to move to next stage" : ""}
+        style={{
+          transition: 'all 0.5s ease-in-out',
+          willChange: 'transform, opacity'
+        }}
     >
       <div className="text-white flex justify-between items-center">
         <div className="flex-1">
@@ -385,8 +538,18 @@ const LiveOrders: React.FC = () => {
           <div className="text-sm opacity-90">{order.items} items, ₹{order.total}</div>
           <div className="text-xs opacity-75">{order.time}</div>
           {isManager && order.status !== 'awaiting-pickup' && order.status !== 'picked-up' && (
-            <div className="text-xs text-yellow-300 mt-2">
-              Click to move to next stage
+              <div className="text-xs text-yellow-300 mt-2 flex items-center">
+                {isUpdating ? (
+                  <>
+                    <svg className="animate-spin -ml-1 mr-2 h-3 w-3 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                    Updating...
+                  </>
+                ) : (
+                  "Click to move to next stage"
+                )}
             </div>
           )}
           {order.status === 'picked-up' && (
@@ -395,12 +558,12 @@ const LiveOrders: React.FC = () => {
             </div>
           )}
         </div>
-        {isManager && order.status === 'awaiting-pickup' && (
+          {isManager && order.status === 'awaiting-pickup' && (
           <div className="ml-3 flex items-center">
             <a
-              href={`/${userRole}/print-qr/${order.id}?orderDetails=${encodeURIComponent(JSON.stringify(order.orderDetails || []))}`}
+                href={`/${userRole}/print-qr/${order.id}?orderDetails=${encodeURIComponent(JSON.stringify(order.orderDetails || []))}`}
               target="_blank"
-              rel="no-referrer"
+                rel="no-referrer"
               onClick={(e) => e.stopPropagation()}
               className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded text-sm font-medium transition-colors flex items-center"
             >
@@ -414,6 +577,7 @@ const LiveOrders: React.FC = () => {
       </div>
     </div>
   );
+  };
 
   return (
     <div className="min-h-screen bg-gray-900 text-white overflow-hidden">
@@ -516,30 +680,30 @@ const LiveOrders: React.FC = () => {
           {/* Logout Button - Show for all users */}
           <button
             onClick={() => {
-              // Clear all user data
-              localStorage.removeItem('superAdminUser');
-              localStorage.removeItem('managerUser');
-              localStorage.removeItem('storeUser');
+                // Clear all user data
+                localStorage.removeItem('superAdminUser');
+                localStorage.removeItem('managerUser');
+                localStorage.removeItem('storeUser');
               
               // Reset authentication state
               setIsAuthenticated(false);
               setOrders([]);
-              
-              // Redirect to appropriate login page
+                
+                // Redirect to appropriate login page
               if (isManager) {
                 navigate('/manager-login');
               } else {
                 navigate('/store-login');
               }
-            }}
-            className="bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded text-sm font-medium transition-colors flex items-center"
-            title="Logout"
-          >
-            <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
-            </svg>
-            Logout
-          </button>
+              }}
+              className="bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded text-sm font-medium transition-colors flex items-center"
+              title="Logout"
+            >
+              <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+              </svg>
+              Logout
+            </button>
         </div>
       </div>
 
@@ -627,6 +791,7 @@ const LiveOrders: React.FC = () => {
               </div>
             )}
 
+            {/* Success Message */}
             {/* No Orders State */}
             {!isLoading && !error && orders.length === 0 && (
               <div className="flex-1 flex items-center justify-center">
@@ -640,60 +805,60 @@ const LiveOrders: React.FC = () => {
             {/* Orders Display - Only show when there are orders */}
             {!isLoading && !error && orders.length > 0 && (
               <>
-                {/* New Orders Column */}
-                <div className="flex-1 p-6 border-r border-gray-700 flex flex-col">
-                  <div className="mb-6">
-                    <h2 className="text-2xl font-bold text-yellow-400">
-                      NEW ORDERS
-                      <span className="text-white ml-2">({getOrdersByStatus('new').length})</span>
-                    </h2>
-                  </div>
-                  <div className="flex-1 overflow-y-auto custom-scrollbar">
-                    <div className="space-y-3 pr-2">
-                      {getOrdersByStatus('new').map((order, index) => (
-                        <OrderCard 
-                          key={order.id} 
-                          order={order} 
-                          isHighlighted={index === 0}
-                        />
-                      ))}
-                    </div>
-                  </div>
-                </div>
+        {/* New Orders Column */}
+                <div className="flex-1 p-6 border-r border-gray-700 flex flex-col transition-all duration-500 ease-in-out order-column">
+          <div className="mb-6">
+            <h2 className="text-2xl font-bold text-yellow-400">
+              NEW ORDERS
+              <span className="text-white ml-2">({getOrdersByStatus('new').length})</span>
+            </h2>
+          </div>
+          <div className="flex-1 overflow-y-auto custom-scrollbar">
+            <div className="space-y-3 pr-2">
+              {getOrdersByStatus('new').map((order, index) => (
+                <OrderCard 
+                          key={`${order.id}-${order.status}`}
+                  order={order} 
+                  isHighlighted={index === 0}
+                />
+              ))}
+            </div>
+          </div>
+        </div>
 
-                {/* Preparing Orders Column */}
-                <div className="flex-1 p-6 border-r border-gray-700 flex flex-col">
-                  <div className="mb-6">
-                    <h2 className="text-2xl font-bold text-blue-400">
-                      PREPARING
-                      <span className="text-white ml-2">({getOrdersByStatus('preparing').length})</span>
-                    </h2>
-                  </div>
-                  <div className="flex-1 overflow-y-auto custom-scrollbar">
-                    <div className="space-y-3 pr-2">
-                      {getOrdersByStatus('preparing').map((order) => (
-                        <OrderCard key={order.id} order={order} />
-                      ))}
-                    </div>
-                  </div>
-                </div>
+        {/* Preparing Orders Column */}
+                <div className="flex-1 p-6 border-r border-gray-700 flex flex-col transition-all duration-500 ease-in-out order-column">
+          <div className="mb-6">
+            <h2 className="text-2xl font-bold text-blue-400">
+              PREPARING
+              <span className="text-white ml-2">({getOrdersByStatus('preparing').length})</span>
+            </h2>
+          </div>
+          <div className="flex-1 overflow-y-auto custom-scrollbar">
+            <div className="space-y-3 pr-2">
+              {getOrdersByStatus('preparing').map((order) => (
+                        <OrderCard key={`${order.id}-${order.status}`} order={order} />
+              ))}
+            </div>
+          </div>
+        </div>
 
-                {/* Awaiting Pickup Column */}
-                <div className="flex-1 p-6 flex flex-col">
-                  <div className="mb-6">
-                    <h2 className="text-2xl font-bold text-green-400">
-                      AWAITING PICKUP
-                      <span className="text-white ml-2">({getOrdersByStatus('awaiting-pickup').length})</span>
-                    </h2>
-                  </div>
-                  <div className="flex-1 overflow-y-auto custom-scrollbar">
-                    <div className="space-y-3 pr-2">
-                      {getOrdersByStatus('awaiting-pickup').map((order) => (
-                        <OrderCard key={order.id} order={order} />
-                      ))}
-                    </div>
-                  </div>
-                </div>
+        {/* Awaiting Pickup Column */}
+                <div className="flex-1 p-6 flex flex-col transition-all duration-500 ease-in-out order-column">
+          <div className="mb-6">
+            <h2 className="text-2xl font-bold text-green-400">
+              AWAITING PICKUP
+              <span className="text-white ml-2">({getOrdersByStatus('awaiting-pickup').length})</span>
+            </h2>
+          </div>
+          <div className="flex-1 overflow-y-auto custom-scrollbar">
+            <div className="space-y-3 pr-2">
+              {getOrdersByStatus('awaiting-pickup').map((order) => (
+                        <OrderCard key={`${order.id}-${order.status}`} order={order} />
+              ))}
+            </div>
+          </div>
+        </div>
               </>
             )}
           </>
@@ -728,6 +893,38 @@ const LiveOrders: React.FC = () => {
         .custom-scrollbar {
           scrollbar-width: thin;
           scrollbar-color: #3B82F6 rgba(55, 65, 81, 0.3);
+        }
+
+        /* Smooth order transitions */
+        .order-card-enter {
+          opacity: 0;
+          transform: translateY(20px) scale(0.95);
+        }
+        
+        .order-card-enter-active {
+          opacity: 1;
+          transform: translateY(0) scale(1);
+          transition: all 0.5s ease-in-out;
+        }
+        
+        .order-card-exit {
+          opacity: 1;
+          transform: translateY(0) scale(1);
+        }
+        
+        .order-card-exit-active {
+          opacity: 0;
+          transform: translateY(-20px) scale(0.95);
+          transition: all 0.5s ease-in-out;
+        }
+
+        /* Column animations */
+        .order-column {
+          transition: all 0.5s ease-in-out;
+        }
+        
+        .order-column:hover {
+          background-color: rgba(55, 65, 81, 0.1);
         }
       `}</style>
     </div>

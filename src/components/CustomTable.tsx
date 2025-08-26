@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React, { useMemo, useState, useEffect } from 'react';
 
 interface Column {
     accessor: string;
@@ -17,6 +17,7 @@ interface CustomTableProps {
     isRtl?: boolean;
     onSearchChange?: (search: string) => void;
     onColumnVisibilityChange?: (hiddenColumns: string[]) => void;
+    searchTerm?: string; // Add external search term support
 }
 
 const PAGE_SIZES = [10, 20, 30, 50, 100];
@@ -29,7 +30,8 @@ const CustomTable = ({
     pageSizeOptions = PAGE_SIZES, 
     isRtl = false,
     onSearchChange,
-    onColumnVisibilityChange
+    onColumnVisibilityChange,
+    searchTerm
 }: CustomTableProps) => {
     const [search, setSearch] = useState('');
     const [page, setPage] = useState(1);
@@ -50,6 +52,15 @@ const CustomTable = ({
         onSearchChange?.(value);
     };
 
+    // Sync external searchTerm with internal search state
+    useEffect(() => {
+        if (searchTerm !== undefined) {
+            setSearch(searchTerm);
+            // Reset to first page when search changes
+            setPage(1);
+        }
+    }, [searchTerm]);
+
     const slNoColumn: Column = {
         accessor: 'slno',
         title: 'Sl. No.',
@@ -65,15 +76,53 @@ const CustomTable = ({
     const filteredAndSortedData = useMemo(() => {
         let filtered = [...data];
 
-        if (search.trim()) {
-            const keyword = search.toLowerCase();
+        // Use external searchTerm if provided, otherwise use internal search state
+        const currentSearch = searchTerm || search;
+        
+        // Helper to extract a searchable string from any field
+        const getFieldString = (row: any, accessor: string): string => {
+            const resolvePath = (obj: any, path: string) =>
+                path.split('.').reduce((acc: any, key: string) => (acc ? acc[key] : undefined), obj);
+
+            let value = accessor.includes('.') ? resolvePath(row, accessor) : row?.[accessor];
+
+            if (value === null || value === undefined) return '';
+
+            // Special handling for date fields
+            if (accessor === 'createdAt') {
+                const date = new Date(value);
+                const formatted = isNaN(date.getTime()) ? '' : date.toLocaleDateString('en-IN');
+                return `${value} ${formatted}`.toLowerCase();
+            }
+
+            // Arrays (e.g., orderDetails)
+            if (Array.isArray(value)) {
+                return value
+                    .map((item) => {
+                        if (item === null || item === undefined) return '';
+                        if (typeof item === 'object') {
+                            return Object.values(item).join(' ');
+                        }
+                        return String(item);
+                    })
+                    .join(' ')
+                    .toLowerCase();
+            }
+
+            // Objects
+            if (typeof value === 'object') {
+                return Object.values(value).join(' ').toLowerCase();
+            }
+
+            return String(value).toLowerCase();
+        };
+        
+        if (currentSearch.trim()) {
+            const keyword = currentSearch.toLowerCase();
             filtered = filtered.filter((item) =>
                 columns.some((col) => {
-                    if (col.accessor.includes('.')) {
-                        const value = col.accessor.split('.').reduce((acc, key) => acc?.[key], item);
-                        return value?.toString().toLowerCase().includes(keyword);
-                    }
-                    return item[col.accessor]?.toString().toLowerCase().includes(keyword);
+                    const haystack = getFieldString(item, col.accessor);
+                    return haystack.includes(keyword);
                 })
             );
         }
@@ -89,14 +138,18 @@ const CustomTable = ({
         });
 
         return filtered;
-    }, [data, search, sortStatus, columns]);
+    }, [data, search, searchTerm, sortStatus, columns]);
 
     const paginatedData = useMemo(() => {
+        // If pageSize equals total data length, show all data (no pagination)
+        if (pageSize === filteredAndSortedData.length) {
+            return filteredAndSortedData;
+        }
         const start = (page - 1) * pageSize;
         return filteredAndSortedData.slice(start, start + pageSize);
     }, [filteredAndSortedData, page, pageSize]);
 
-    const totalPages = Math.ceil(filteredAndSortedData.length / pageSize);
+    const totalPages = pageSize === filteredAndSortedData.length ? 1 : Math.ceil(filteredAndSortedData.length / pageSize);
 
     const handleSort = (columnAccessor: string) => {
         setSortStatus(prev => ({
@@ -106,7 +159,7 @@ const CustomTable = ({
     };
 
     return (
-        <div className="bg-white rounded-lg shadow-lg p-6">
+        <div className="rounded-lg shadow-lg w-full overflow-hidden">
             {/* Table */}
             <div className="overflow-x-auto">
                 <table className="min-w-full divide-y divide-gray-200">
@@ -124,7 +177,7 @@ const CustomTable = ({
                                         {column.title}
                                         {column.sortable && (
                                             <svg className="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16V4m0 0L3 8m4-4l4 4m6 0v12m0 0l4-4m-4 4l-4-4" />
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M7 16V4m0 0L3 8m4-4l4 4m6 0v12m0 0l4-4m-4 4l-4-4" />
                                             </svg>
                                         )}
                                     </div>
@@ -149,7 +202,10 @@ const CustomTable = ({
             {/* Beautiful Pagination */}
             <div className="flex items-center justify-between mt-6 bg-gradient-to-r from-red-50 to-pink-50 rounded-lg p-4 border border-red-100">
                 <div className="text-sm text-gray-700 font-medium">
-                    Showing {((page - 1) * pageSize) + 1} to {Math.min(page * pageSize, filteredAndSortedData.length)} of {filteredAndSortedData.length} results
+                    {pageSize === filteredAndSortedData.length 
+                        ? `Showing all ${filteredAndSortedData.length} results`
+                        : `Showing ${((page - 1) * pageSize) + 1} to ${Math.min(page * pageSize, filteredAndSortedData.length)} of ${filteredAndSortedData.length} results`
+                    }
                 </div>
                 
                 <div className="flex items-center space-x-2">
@@ -159,7 +215,8 @@ const CustomTable = ({
                         <select
                             value={pageSize}
                             onChange={(e) => {
-                                setPageSize(Number(e.target.value));
+                                const newPageSize = e.target.value === 'all' ? filteredAndSortedData.length : Number(e.target.value);
+                                setPageSize(newPageSize);
                                 setPage(1);
                             }}
                             className="border border-red-200 rounded-md px-2 py-1 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-red-500"
@@ -169,80 +226,83 @@ const CustomTable = ({
                                     {size}
                                 </option>
                             ))}
+                            <option value="all">Show All</option>
                         </select>
                         <span className="text-sm text-gray-700">entries</span>
                     </div>
 
                     {/* Pagination Controls */}
-                    <div className="flex items-center space-x-1">
-                        <button
-                            onClick={() => setPage(1)}
-                            disabled={page === 1}
-                            className="p-2 rounded-md border border-red-200 bg-white text-red-600 hover:bg-red-50 disabled:opacity-50 disabled:cursor-not-allowed"
-                        >
-                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 19l-7-7 7-7m8 14l-7-7 7-7" />
-                            </svg>
-                        </button>
-                        
-                        <button
-                            onClick={() => setPage(page - 1)}
-                            disabled={page === 1}
-                            className="p-2 rounded-md border border-red-200 bg-white text-red-600 hover:bg-red-50 disabled:opacity-50 disabled:cursor-not-allowed"
-                        >
-                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-                            </svg>
-                        </button>
+                    {pageSize !== filteredAndSortedData.length && (
+                        <div className="flex items-center space-x-1">
+                            <button
+                                onClick={() => setPage(1)}
+                                disabled={page === 1}
+                                className="p-2 rounded-md border border-red-200 bg-white text-red-600 hover:bg-red-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                            >
+                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 19l-7-7 7-7m8 14l-7-7 7-7" />
+                                </svg>
+                            </button>
+                            
+                            <button
+                                onClick={() => setPage(page - 1)}
+                                disabled={page === 1}
+                                className="p-2 rounded-md border border-red-200 bg-white text-red-600 hover:bg-red-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                            >
+                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                                </svg>
+                            </button>
 
-                        {/* Page Numbers */}
-                        {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
-                            let pageNum: number;
-                            if (totalPages <= 5) {
-                                pageNum = i + 1;
-                            } else if (page <= 3) {
-                                pageNum = i + 1;
-                            } else if (page >= totalPages - 2) {
-                                pageNum = totalPages - 4 + i;
-                            } else {
-                                pageNum = page - 2 + i;
-                            }
+                            {/* Page Numbers */}
+                            {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+                                let pageNum: number;
+                                if (totalPages <= 5) {
+                                    pageNum = i + 1;
+                                } else if (page <= 3) {
+                                    pageNum = i + 1;
+                                } else if (page >= totalPages - 2) {
+                                    pageNum = totalPages - 4 + i;
+                                } else {
+                                    pageNum = page - 2 + i;
+                                }
 
-                            return (
-                                <button
-                                    key={pageNum}
-                                    onClick={() => setPage(pageNum)}
-                                    className={`px-3 py-2 rounded-md text-sm font-medium ${
-                                        page === pageNum
-                                            ? 'bg-red-600 text-white border border-red-600'
-                                            : 'border border-red-200 bg-white text-red-600 hover:bg-red-50'
-                                    }`}
-                                >
-                                    {pageNum}
-                                </button>
-                            );
-                        })}
+                                return (
+                                    <button
+                                        key={pageNum}
+                                        onClick={() => setPage(pageNum)}
+                                        className={`px-3 py-2 rounded-md text-sm font-medium ${
+                                            page === pageNum
+                                                ? 'bg-red-600 text-white border border-red-600'
+                                                : 'border border-red-200 bg-white text-red-600 hover:bg-red-50'
+                                        }`}
+                                    >
+                                        {pageNum}
+                                    </button>
+                                );
+                            })}
 
-                        <button
-                            onClick={() => setPage(page + 1)}
-                            disabled={page === totalPages}
-                            className="p-2 rounded-md border border-red-200 bg-white text-red-600 hover:bg-red-50 disabled:opacity-50 disabled:cursor-not-allowed"
-                        >
-                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                            </svg>
-                        </button>
-                        
-                        <button
-                            onClick={() => setPage(totalPages)}
-                            disabled={page === totalPages}
-                            className="p-2 rounded-md border border-red-200 bg-white text-red-600 hover:bg-red-50 disabled:opacity-50 disabled:cursor-not-allowed"
-                        >
-                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 5l7 7-7 7M5 5l7 7-7 7" />
-                            </svg>
-                        </button>
-                    </div>
+                            <button
+                                onClick={() => setPage(page + 1)}
+                                disabled={page === totalPages}
+                                className="p-2 rounded-md border border-red-200 bg-white text-red-600 hover:bg-red-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                            >
+                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                                </svg>
+                            </button>
+                            
+                            <button
+                                onClick={() => setPage(totalPages)}
+                                disabled={page === totalPages}
+                                className="p-2 rounded-md border border-red-200 bg-white text-red-600 hover:bg-red-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                            >
+                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 5l7 7-7 7M5 5l7 7-7 7" />
+                                </svg>
+                            </button>
+                        </div>
+                    )}
                 </div>
             </div>
         </div>
