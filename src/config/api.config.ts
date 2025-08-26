@@ -27,7 +27,9 @@ export const API_CONFIG = {
     MANAGER: {
       PROFILE: '/manager/profile',
       ORDERS: '/manager/orders',
+      ORDER_STATS: '/manager/orders/stats',
       LIVE_ORDERS: '/manager/live-orders',
+      DELIVERY_PARTNERS: '/manager/delivery-partners',
     },
     STORE: {
       PROFILE: '/store/profile',
