@@ -16,6 +16,7 @@ interface FormInputs {
   managerLastName: string;
   // managerEmail: string;
   managerPhone: string;
+  storePhone: string;
   latitude: string;
   longitude: string;
   pincode: string;
@@ -66,6 +67,7 @@ const MeatCenterEdit: React.FC = () => {
       managerLastName: lastName,
       managerEmail: state.managerEmail || '',
       managerPhone: state.phone || '',
+      storePhone: state.storePhone || '',
       latitude: state.lat ? String(state.lat) : '',
       longitude: state.long ? String(state.long) : '',
       pincode: state.pincode || '',
@@ -100,6 +102,7 @@ const MeatCenterEdit: React.FC = () => {
           managerLastName: data.managerLastName,
           // managerEmail: data.managerEmail,
           managerPhone: data.managerPhone,
+          storePhone: data.storePhone,
           latitude: data.latitude,
           longitude: data.longitude,
           pincode: data.pincode,
@@ -307,6 +310,35 @@ const MeatCenterEdit: React.FC = () => {
                 {errors.managerPhone && (
                   <p className="mt-1 text-xs text-red-600" role="alert">
                     {errors.managerPhone.message}
+                  </p>
+                )}
+              </div>
+
+              {/* Store Phone */}
+              <div>
+                <label
+                  htmlFor="storePhone"
+                  className="block text-sm font-medium text-gray-700 mb-1"
+                >
+                  Store Phone *
+                </label>
+                <input
+                  id="storePhone"
+                  type="text"
+                  {...register('storePhone', {
+                    required: 'Store phone is required',
+                    pattern: {
+                      value: /^[0-9]{10}$/,
+                      message: 'Enter a valid 10-digit phone number',
+                    },
+                  })}
+                  className={`block w-full px-4 py-2 border rounded-lg shadow-sm sm:text-sm focus:outline-none focus:ring-2 focus:ring-blue-300 transition ${errors.storePhone ? 'border-red-400' : 'border-gray-300'}`}
+                  placeholder="Enter store phone number"
+                  aria-invalid={errors.storePhone ? 'true' : 'false'}
+                />
+                {errors.storePhone && (
+                  <p className="mt-1 text-xs text-red-600" role="alert">
+                    {errors.storePhone.message}
                   </p>
                 )}
               </div>
