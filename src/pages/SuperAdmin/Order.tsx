@@ -57,15 +57,43 @@ interface Customer {
     }>;
 }
 
+interface ApiOrderItem {
+    name: string;
+    quantity: number;
+    price: number;
+    _id: string;
+}
+
 interface Order {
     _id: string;
     geoLocation?: GeoLocation;
-    customer?: Partial<Customer>;
-    orders: OrderItem[];
+    customer?: Partial<Customer> | null;
+    orders: OrderItem[]; // Transformed from orderDetails
+    orderDetails?: ApiOrderItem[]; // Raw API field
     status?: string;
     amount?: number;
     createdAt?: string;
     updatedAt?: string;
+    clientName?: string;
+    location?: string;
+    pincode?: string;
+    phone?: string;
+    notes?: string;
+    isUrgent?: boolean;
+    store?: {
+        _id: string;
+        name: string;
+    } | null;
+    manager?: {
+        _id: string;
+    } | null;
+    deliveryStatus?: string;
+    deliveryRejectionReason?: string | null;
+    pickedUpBy?: string | null;
+    deliveryPartner?: string | null;
+    pickedUpAt?: string;
+    estimatedDeliveryTime?: string;
+    actualDeliveryTime?: string;
 }
 
 interface ApiResponse {
@@ -102,23 +130,31 @@ const OrderDisplay: React.FC = () => {
             try {
                 setLoading(true);
                 setError(null);
+                console.log('Fetching orders...');
 
                 const response: ApiResponse = await callApi({
                     endpoint: '/admin/display-order',
                     method: 'GET',
                 });
+                console.log('API Response:', response);
 
-                // Simplify order extraction logic
+                // Simplify order extraction and transform orderDetails to orders
                 const ordersData: Order[] =
-                    response.data?.orders ??
-                    response.orders ??
-                    (Array.isArray(response.data) ? response.data : []) ??
-                    [];
+                    (response.data?.orders ?? response.orders ?? (Array.isArray(response.data) ? response.data : [])).map(
+                        (order: Order) => ({
+                            ...order,
+                            orders: order.orderDetails?.map((item: ApiOrderItem) => ({
+                                subCategory: item.name,
+                                count: item.quantity,
+                                _id: item._id,
+                                orderedAt: order.createdAt || new Date().toISOString(), // Fallback if orderedAt is missing
+                            })) || [],
+                        })
+                    );
 
                 setOrders(ordersData);
             } catch (err: any) {
-                const errorMessage =
-                    err.response?.data?.message || 'Failed to fetch orders. Please try again later.';
+                const errorMessage = err.response?.data?.message || 'Failed to fetch orders. Please try again later.';
                 setError(errorMessage);
                 console.error('Error fetching orders:', err);
             } finally {
@@ -237,10 +273,8 @@ const OrderDisplay: React.FC = () => {
     return (
         <div
             style={{
-                padding: '20px',
                 fontFamily: 'Arial, sans-serif',
                 minHeight: '100vh',
-                backgroundColor: '#f5f5f5',
             }}
         >
             <div style={{ maxWidth: '1400px', margin: '0 auto' }}>
@@ -351,10 +385,13 @@ const OrderDisplay: React.FC = () => {
                                             </span>
                                         </div>
                                         <p style={{ margin: '8px 0', color: '#666' }}>
-                                            <strong>Customer:</strong> {order.customer?.name ?? 'N/A'}
+                                            <strong>Customer:</strong> {order.clientName ?? order.customer?.name ?? 'N/A'}
                                         </p>
                                         <p style={{ margin: '8px 0', color: '#666' }}>
-                                            <strong>Phone:</strong> {order.customer?.phone ?? 'N/A'}
+                                            <strong>Store:</strong> {order.store?.name ?? 'N/A'}
+                                        </p>
+                                        <p style={{ margin: '8px 0', color: '#666' }}>
+                                            <strong>Phone:</strong> {order.phone ?? order.customer?.phone ?? 'N/A'}
                                         </p>
                                         <p style={{ margin: '8px 0', color: '#666' }}>
                                             <strong>Items:</strong> {order.orders?.length ?? 0} item(s)
@@ -430,10 +467,13 @@ const OrderDisplay: React.FC = () => {
                                                 Customer Information
                                             </h3>
                                             <p>
-                                                <strong>Name:</strong> {selectedOrder.customer?.name ?? 'N/A'}
+                                                <strong>Name:</strong> {selectedOrder.clientName ?? selectedOrder.customer?.name ?? 'N/A'}
                                             </p>
                                             <p>
-                                                <strong>Phone:</strong> {selectedOrder.customer?.phone ?? 'N/A'}
+                                                <strong>Phone:</strong> {selectedOrder.phone ?? selectedOrder.customer?.phone ?? 'N/A'}
+                                            </p>
+                                            <p>
+                                                <strong>Store:</strong> {selectedOrder.store?.name ?? 'N/A'}
                                             </p>
                                             <p>
                                                 <strong>Wallet Balance:</strong> ₹
@@ -443,18 +483,14 @@ const OrderDisplay: React.FC = () => {
                                                 <strong>Status:</strong>{' '}
                                                 {selectedOrder.customer?.isActive ? 'Active' : 'Inactive'}
                                             </p>
-                                            {selectedOrder.customer?.address?.[0] && (
+                                            {(selectedOrder.location || selectedOrder.pincode) && (
                                                 <div style={{ marginTop: '10px' }}>
                                                     <p>
                                                         <strong>Address:</strong>
                                                     </p>
                                                     <p>
-                                                        {selectedOrder.customer.address[0].houseNo},{' '}
-                                                        {selectedOrder.customer.address[0].street}
-                                                        <br />
-                                                        {selectedOrder.customer.address[0].city},{' '}
-                                                        {selectedOrder.customer.address[0].state} -{' '}
-                                                        {selectedOrder.customer.address[0].pincode}
+                                                        {selectedOrder.location ?? 'N/A'}
+                                                        {selectedOrder.pincode ? `, ${selectedOrder.pincode}` : ''}
                                                     </p>
                                                 </div>
                                             )}
@@ -522,6 +558,34 @@ const OrderDisplay: React.FC = () => {
                                             <p>
                                                 <strong>Type:</strong> {selectedOrder.geoLocation.type ?? 'N/A'}
                                             </p>
+                                        </div>
+                                    )}
+                                    {selectedOrder.notes && (
+                                        <div>
+                                            <h3
+                                                style={{
+                                                    color: '#555',
+                                                    borderBottom: '1px solid #eee',
+                                                    paddingBottom: '5px',
+                                                }}
+                                            >
+                                                Notes
+                                            </h3>
+                                            <p>{selectedOrder.notes}</p>
+                                        </div>
+                                    )}
+                                    {selectedOrder.isUrgent !== undefined && (
+                                        <div>
+                                            <h3
+                                                style={{
+                                                    color: '#555',
+                                                    borderBottom: '1px solid #eee',
+                                                    paddingBottom: '5px',
+                                                }}
+                                            >
+                                                Priority
+                                            </h3>
+                                            <p>{selectedOrder.isUrgent ? 'Urgent' : 'Standard'}</p>
                                         </div>
                                     )}
                                 </div>
