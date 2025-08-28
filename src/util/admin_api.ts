@@ -161,7 +161,7 @@ export const callApi = async ({
   data = null,
   config = {},
 }: CallApiOptions) => {
-  try {
+  try { 
     const response = await API.request({
       url: endpoint,
       method,

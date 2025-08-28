@@ -13,6 +13,7 @@ import FullDetails from '../pages/SuperAdmin/Categories/typeCategories/subCatego
 import DisplayCoupons from '../pages/SuperAdmin/Coupons/Display';
 import AddCoupons from '../pages/SuperAdmin/Coupons/Add';
 import EditCoupons from '../pages/SuperAdmin/Coupons/Edit';
+import OrderDisplay from "../pages/SuperAdmin/Order.js";
 
 const DeliveryPartner = lazy(() => import('../pages/Manager/DeliveryPartner'));
 const AddPartner = lazy(() => import('../pages/Manager/DeliveryPartner/AddPartner'));
@@ -266,21 +267,29 @@ export const commonRoutes: AppRoute[] = [
 
   // Coupons
 
-    {
+  {
     path: '/coupons',
     element: <DisplayCoupons />,
     layout: 'default',
     role: 'super-admin',
   },
-    {
+  {
     path: '/coupons/add',
     element: <AddCoupons />,
     layout: 'default',
     role: 'super-admin',
   },
-    {
+  {
     path: '/coupons/edit',
     element: <EditCoupons />,
+    layout: 'default',
+    role: 'super-admin',
+  },
+
+  // order 
+  {
+    path: '/order',
+    element: <OrderDisplay />,
     layout: 'default',
     role: 'super-admin',
   },
