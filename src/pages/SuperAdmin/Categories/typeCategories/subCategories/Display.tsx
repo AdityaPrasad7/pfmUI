@@ -43,7 +43,9 @@ const SubCategoriesDisplay: React.FC = () => {
     const { id: paramId } = useParams<{ id: string }>();
     const navigate = useNavigate();
     const location = useLocation();
-    const id = location.state?.id || paramId; // Fallback to default ID
+    const typeId = location.state?.typeId || paramId; // This is the type ID for API calls
+    const categoryId = location.state?.categoryId; // This is the category ID for navigation back
+    const id = typeId; // Keep the existing logic for API calls
 
     // Fetch sub categories from API
     useEffect(() => {
@@ -109,7 +111,7 @@ const SubCategoriesDisplay: React.FC = () => {
         console.log("🚀 ~ handleEdit ~ selectedItem:", selectedItem)
         if (selectedItem) {
             navigate(`/sub/categories/edit`, {
-                state: { subCategory: selectedItem, categoryId: id },
+                state: { subCategory: selectedItem, categoryId: categoryId },
             });
         }
         handleClose();
@@ -235,17 +237,13 @@ const SubCategoriesDisplay: React.FC = () => {
                 <div className="mb-8">
                     <div className="flex flex-col sm:flex-row md:items-center items-end sm:justify-between gap-5">
                         <div className="flex items-center gap-4">
-                            {/* <NavigateBtn
-                                to="/type-categories"
-                                state={{ id }}
-                                label={
-                                    <span className="flex items-center gap-1">
-                                        <ArrowBackIcon fontSize="small" />
-                                        <span>Back to Type Categories</span>
-                                    </span>
-                                }
-                                className="bg-gray-100 hover:bg-gray-200 text-gray-800 px-4 py-2 rounded-lg"
-                            /> */}
+                            <button
+                                onClick={() => navigate('/type/categories', { state: { id: categoryId } })}
+                                className="flex items-center gap-2 text-gray-600 hover:text-gray-800 transition-colors"
+                            >
+                                <ArrowBackIcon fontSize="small" />
+                                <span>Back</span>
+                            </button>
                             <div>
                                 <h1 className="text-2xl font-bold text-gray-800">Sub Categories</h1>
                                 <p className="text-sm text-gray-600">Manage sub categories for your products</p>
