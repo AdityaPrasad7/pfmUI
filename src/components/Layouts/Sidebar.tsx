@@ -41,6 +41,7 @@ import NotificationsIcon from '@mui/icons-material/Notifications';
 import LocalShippingIcon from '@mui/icons-material/LocalShipping';
 import CategoryIcon from '@mui/icons-material/Category';
 import ConfirmationNumberIcon from '@mui/icons-material/ConfirmationNumber';
+import InventoryIcon from '@mui/icons-material/Inventory';
 import GradingIcon from '@mui/icons-material/Grading';
 
 const Sidebar = () => {
@@ -268,6 +269,16 @@ const Sidebar = () => {
                                                     <IconMenuInvoice className="group-hover:!text-[#F47C7C] shrink-0" />
                                                     <span className="ltr:pl-3 rtl:pr-3 text-black dark:text-[#506690] dark:group-hover:text-white-dark">
                                                         {t('Order Management')}
+                                                    </span>
+                                                </div>
+                                            </NavLink>
+                                        </li>
+                                        <li className="nav-item">
+                                            <NavLink to="/manager/inventory" className="group">
+                                                <div className="flex items-center">
+                                                    <InventoryIcon className="group-hover:!text-[#F47C7C] shrink-0" />
+                                                    <span className="ltr:pl-3 rtl:pr-3 text-black dark:text-[#506690] dark:group-hover:text-white-dark">
+                                                        {t('Inventory')}
                                                     </span>
                                                 </div>
                                             </NavLink>

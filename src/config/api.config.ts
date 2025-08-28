@@ -30,6 +30,13 @@ export const API_CONFIG = {
       ORDER_STATS: '/manager/orders/stats',
       LIVE_ORDERS: '/manager/live-orders',
       DELIVERY_PARTNERS: '/manager/delivery-partners',
+      INVENTORY: '/manager/inventory',
+      INVENTORY_CATEGORY: '/manager/inventory/category',
+      INVENTORY_TYPE_CATEGORY: '/manager/inventory/type-category',
+      INVENTORY_PRODUCT_QUANTITY: '/manager/inventory/product',
+      INVENTORY_LOW_STOCK: '/manager/inventory/low-stock',
+      INVENTORY_OUT_OF_STOCK: '/manager/inventory/out-of-stock',
+      INVENTORY_BULK_UPDATE: '/manager/inventory/bulk-update',
     },
     STORE: {
       PROFILE: '/store/profile',

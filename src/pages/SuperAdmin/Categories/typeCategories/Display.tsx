@@ -7,6 +7,7 @@ import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import callApi from '../../../../util/admin_api';
 import { AxiosResponse } from 'axios';
+import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 
 // Default image
 import defaultImg from '../../../../assets/items/chicken leg piece.png';
@@ -70,7 +71,7 @@ const TypeCategoriesDisplay: React.FC = () => {
                 );
 
                 if (!response.data.success || !Array.isArray(response.data.data)) {
-                    throw new Error(response.data.message || 'Invalid API response format');
+                    throw new Error(response.data.message || 'Failed to fetch type categories');
                 }
 
                 setTypeCategories(response.data.data);
@@ -108,8 +109,8 @@ const TypeCategoriesDisplay: React.FC = () => {
 
     const handleEdit = () => {
         if (selectedItem) {
-            navigate(`/type/categories/edit/${selectedItem._id}`, {
-                state: { typeCategory: selectedItem, id },
+            navigate(`/type/categories/edit`, {
+                state: { typeCategory: selectedItem, categoryId: id }
             });
         }
         handleClose();
@@ -133,7 +134,7 @@ const TypeCategoriesDisplay: React.FC = () => {
                 throw new Error('No authentication token found. Please log in.');
             }
 
-            const response: AxiosResponse<ApiResponse<unknown>> = await callApi(
+            const response: AxiosResponse<ApiResponse<any>> = await callApi(
                 `/admin/type-categories/${selectedItem._id}`,
                 {
                     method: 'DELETE',
@@ -150,8 +151,6 @@ const TypeCategoriesDisplay: React.FC = () => {
             setTypeCategories((prev) => prev.filter((item) => item._id !== selectedItem._id));
             toast.success('Type category deleted successfully!', {
                 toastId: 'delete-type-category-success',
-                position: 'top-right',
-                autoClose: 2000,
             });
         } catch (error: unknown) {
             const errorMessage = error instanceof Error ? error.message : 'Failed to delete type category';
@@ -162,20 +161,18 @@ const TypeCategoriesDisplay: React.FC = () => {
                 position: 'top-right',
                 autoClose: 3000,
             });
-
-            if (errorMessage.includes('token') || errorMessage.includes('Unauthorized')) {
-                localStorage.removeItem('superAdminUser');
-                navigate('/admin/login');
-            }
         }
 
         handleClose();
     };
 
-    const getTypeCategoryImage = (typeCategory: TypeCategory): string => {
+    const getTypeCategoryImage = (typeCategory: TypeCategory) => {
+        // Use the MongoDB image if available and valid
         if (typeCategory.img && typeof typeCategory.img === 'string' && typeCategory.img.startsWith('http')) {
             return typeCategory.img;
         }
+
+        // Fallback to default image
         return defaultImg;
     };
 
@@ -224,8 +221,18 @@ const TypeCategoriesDisplay: React.FC = () => {
             <div className="py-6">
                 <div className="mb-8">
                     <div className="flex flex-col sm:flex-row md:items-center items-end sm:justify-between gap-5">
-                        <div className="w-full">
-                            <h1 className="text-2xl font-bold text-gray-800">Type Categories</h1>
+                        <div className="flex items-center gap-4">
+                            <button
+                                onClick={() => navigate('/categories')}
+                                className="flex items-center gap-2 text-gray-600 hover:text-gray-800 transition-colors"
+                            >
+                                <ArrowBackIcon fontSize="small" />
+                                <span>Back</span>
+                            </button>
+                            <div>
+                                <h1 className="text-2xl font-bold text-gray-800">Type Categories</h1>
+                                <p className="text-sm text-gray-600">Select a type category to view sub categories</p>
+                            </div>
                         </div>
                         <NavigateBtn
                             to="/type/categories/add"
@@ -287,7 +294,7 @@ const TypeCategoriesDisplay: React.FC = () => {
                                 </div>
                                 <Link
                                     to="/sub/categories"
-                                    state={{ id: item._id }}
+                                    state={{ typeId: item._id, categoryId: id }}
                                 >
                                     <CardContent className="flex flex-col items-center p-4">
                                         <div className="w-32 h-32 mb-4 flex items-center justify-center">
