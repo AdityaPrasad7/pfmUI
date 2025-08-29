@@ -227,7 +227,6 @@ const TypeCategoriesDisplay: React.FC = () => {
                                 className="flex items-center gap-2 text-gray-600 hover:text-gray-800 transition-colors"
                             >
                                 <ArrowBackIcon fontSize="small" />
-                                <span>Back</span>
                             </button>
                             <div>
                                 <h1 className="text-2xl font-bold text-gray-800">Type Categories</h1>

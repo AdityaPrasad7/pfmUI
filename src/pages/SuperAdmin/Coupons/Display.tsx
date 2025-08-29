@@ -54,7 +54,8 @@ interface Coupon {
 interface CouponForm {
     name: string
     discount: number
-    expiryDate: string
+    expiryDate: string // DD-MM-YYYY:HH:mm (backend expects this)
+    expiryDateLocal?: string // YYYY-MM-DDTHH:mm (for datetime-local input)
     limit: number
 }
 
@@ -85,6 +86,24 @@ const toCustomDate = (isoDate: string): string => {
     return `${day}-${month}-${year}:${hours}:${minutes}`
 }
 
+// Convert DD-MM-YYYY:HH:mm -> YYYY-MM-DDTHH:mm (for input)
+const customToDatetimeLocal = (customDate: string): string => {
+    const valid = isValidCustomDate(customDate)
+    if (!valid) return ""
+    const [day, month, year, hours, minutes] = customDate.split(/[-:]/)
+    return `${year}-${month}-${day}T${hours}:${minutes}`
+}
+
+// Convert YYYY-MM-DDTHH:mm -> DD-MM-YYYY:HH:mm (to store/send)
+const datetimeLocalToCustom = (datetimeLocal: string): string => {
+    if (!datetimeLocal) return ""
+    const [datePart, timePart] = datetimeLocal.split('T')
+    if (!datePart || !timePart) return ""
+    const [year, month, day] = datePart.split('-')
+    const [hours, minutes] = timePart.split(':')
+    return `${day}-${month}-${year}:${hours}:${minutes}`
+}
+
 const CouponsList: React.FC = () => {
     const navigate = useNavigate()
     const [coupons, setCoupons] = useState<Coupon[]>([])
@@ -97,6 +116,7 @@ const CouponsList: React.FC = () => {
         name: "",
         discount: 0,
         expiryDate: "",
+        expiryDateLocal: "",
         limit: 0,
     })
     const [formLoading, setFormLoading] = useState(false)
@@ -158,6 +178,7 @@ const CouponsList: React.FC = () => {
             name: "",
             discount: 0,
             expiryDate: "",
+            expiryDateLocal: "",
             limit: 0,
         })
         setCreateDialogOpen(true)
@@ -169,6 +190,7 @@ const CouponsList: React.FC = () => {
                 name: selectedCoupon.name,
                 discount: selectedCoupon.discount,
                 expiryDate: toCustomDate(selectedCoupon.expiryDate),
+                expiryDateLocal: customToDatetimeLocal(toCustomDate(selectedCoupon.expiryDate)),
                 limit: selectedCoupon.limit,
             })
             setEditDialogOpen(true)
@@ -360,13 +382,11 @@ const CouponsList: React.FC = () => {
                             label="Expiry Date"
                             type="datetime-local"
                             fullWidth
-                            value={form.expiryDate}
+                            value={form.expiryDateLocal}
                             onChange={(e) => {
-                                const date = new Date(e.target.value);
-                                if (!isNaN(date.getTime())) {
-                                    const formattedDate = toCustomDate(date.toISOString());
-                                    setForm({ ...form, expiryDate: formattedDate });
-                                }
+                                const localVal = e.target.value
+                                const customVal = datetimeLocalToCustom(localVal)
+                                setForm({ ...form, expiryDateLocal: localVal, expiryDate: customVal })
                             }}
                             InputLabelProps={{
                                 shrink: true,

@@ -899,6 +899,31 @@ interface UserData {
     token?: string;
 }
 
+// Utility function to normalize type tokens (same as used in manager section)
+const normalizeTypeTokens = (raw: any): string[] => {
+    // Accept arrays, JSON-stringified arrays, comma-separated strings, or single strings
+    try {
+        if (Array.isArray(raw)) {
+            return raw.flatMap((item) => normalizeTypeTokens(item));
+        }
+        if (typeof raw === 'string') {
+            const s = raw.trim();
+            if ((s.startsWith('[') && s.endsWith(']')) || (s.startsWith('"[') && s.endsWith(']"'))) {
+                const parsed = JSON.parse(s.replace(/^"|"$/g, ''));
+                return Array.isArray(parsed) ? normalizeTypeTokens(parsed) : [String(parsed)];
+            }
+            if (s.includes(',')) {
+                return s.split(',').map((t) => t.trim()).filter(Boolean);
+            }
+            return [s];
+        }
+        if (raw == null) return [];
+        return [String(raw)];
+    } catch {
+        return [String(raw)];
+    }
+};
+
 const FullDetails: React.FC = () => {
     const [product, setProduct] = useState<ProductDetails | null>(null);
     const [loading, setLoading] = useState(true);
@@ -910,6 +935,11 @@ const FullDetails: React.FC = () => {
 
     // Get the product ID from either URL params or location state
     const productId = id || location.state?.id;
+    
+    // Debug logging
+    console.log('FullDetails.tsx - id from params:', id);
+    console.log('FullDetails.tsx - location.state:', location.state);
+    console.log('FullDetails.tsx - productId:', productId);
 
     // Fetch product details from API
     useEffect(() => {
@@ -942,6 +972,7 @@ const FullDetails: React.FC = () => {
                     throw new Error(response.data.message || 'Failed to fetch product details');
                 }
 
+                console.log('🚀 ~ fetchProductDetails ~ product data:', response.data.data);
                 setProduct(response.data.data);
             } catch (error: unknown) {
                 const errorMessage = error instanceof Error ? error.message : 'Failed to fetch product details';
@@ -965,7 +996,7 @@ const FullDetails: React.FC = () => {
     const handleEdit = () => {
         if (product) {
             navigate(`/sub/categories/edit`, {
-                state: { product }
+                state: { subCategory: product }
             });
         }
     };
@@ -1153,9 +1184,9 @@ const FullDetails: React.FC = () => {
                                 </div>
 
                                 <div className="flex flex-wrap gap-2 mb-4">
-                                    {product.type.map((type) => (
+                                    {normalizeTypeTokens(product.type).map((type, index) => (
                                         <Chip
-                                            key={type}
+                                            key={index}
                                             label={type}
                                             variant="outlined"
                                             color="primary"
