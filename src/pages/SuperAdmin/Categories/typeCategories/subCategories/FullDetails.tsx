@@ -935,11 +935,6 @@ const FullDetails: React.FC = () => {
 
     // Get the product ID from either URL params or location state
     const productId = id || location.state?.id;
-    
-    // Debug logging
-    console.log('FullDetails.tsx - id from params:', id);
-    console.log('FullDetails.tsx - location.state:', location.state);
-    console.log('FullDetails.tsx - productId:', productId);
 
     // Fetch product details from API
     useEffect(() => {
@@ -996,7 +991,7 @@ const FullDetails: React.FC = () => {
     const handleEdit = () => {
         if (product) {
             navigate(`/sub/categories/edit`, {
-                state: { subCategory: product }
+                state: { product }
             });
         }
     };

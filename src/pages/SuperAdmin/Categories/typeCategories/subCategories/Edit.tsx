@@ -1466,86 +1466,19 @@ const SubCategoriesEdit: React.FC = () => {
     } = useForm<FormInputs>();
 
     const navigate = useNavigate();
+    const { id } = useParams<{ id: string }>();
     const location = useLocation();
     const [preview, setPreview] = useState<string | null>(null);
     const [types, setTypes] = useState<string[]>([]);
     const [inputValue, setInputValue] = useState<string>('');
-    const [product, setProduct] = useState<SubCategory | null>(null);
-    const [loading, setLoading] = useState(false);
 
-    // Get product data from location state
-    const productFromState = location.state?.subCategory as any; // Using any to handle both interfaces
-    const subCategoryId = productFromState?._id || productFromState?.id;
-    
-    // Debug logging
-    console.log('Edit.tsx - subCategoryId:', subCategoryId);
-    console.log('Edit.tsx - productFromState:', productFromState);
-    console.log('Edit.tsx - location.state:', location.state);
-
-    // Fetch full product details if we have an ID but incomplete data
-    useEffect(() => {
-        const fetchProductDetails = async () => {
-            if (subCategoryId && (!productFromState || !productFromState.quality)) {
-                try {
-                    setLoading(true);
-                    console.log('Edit.tsx - Fetching full product details for ID:', subCategoryId);
-                    
-                    const userDataString = localStorage.getItem('superAdminUser');
-                    const userData: UserData = userDataString ? JSON.parse(userDataString) : {};
-                    const token = userData.token;
-
-                    if (!token) {
-                        throw new Error('No authentication token found. Please log in.');
-                    }
-
-                    const response: AxiosResponse<ApiResponse<SubCategory>> = await callApi({
-                        url: `/admin/sub-product-categories-details/${subCategoryId}`,
-                        method: 'GET',
-                        headers: {
-                            'Authorization': `Bearer ${token}`
-                        }
-                    });
-
-                    if (!response.data.success) {
-                        throw new Error(response.data.message || 'Failed to fetch product details');
-                    }
-
-                    const fullProduct = response.data.data;
-                    setProduct(fullProduct);
-                    console.log('Edit.tsx - Fetched full product:', fullProduct);
-                                    } catch (error: unknown) {
-                        const errorMessage = error instanceof Error ? error.message : 'Failed to fetch product details';
-                        console.error('Error fetching product details:', errorMessage);
-                        
-                        toast.error(errorMessage, {
-                            toastId: 'fetch-product-details-error',
-                            position: 'top-right',
-                            autoClose: 3000,
-                        });
-                        
-                        // If we can't fetch the details, try to use what we have from state
-                        if (productFromState) {
-                            setProduct(productFromState);
-                            console.log('Edit.tsx - Falling back to product from state:', productFromState);
-                        }
-                    } finally {
-                        setLoading(false);
-                    }
-                } else if (productFromState) {
-                    // Use the data from state if it's complete
-                    setProduct(productFromState);
-                    console.log('Edit.tsx - Using product from state:', productFromState);
-                }
-        };
-
-        fetchProductDetails();
-    }, [subCategoryId, productFromState]);
+    // Get product data from location state or fetch it
+    const product = location.state?.product as SubCategory | undefined;
+    const subCategoryId = id || product?._id;
 
     // Initialize form with product data
     useEffect(() => {
-        console.log('Edit.tsx - useEffect triggered with product:', product);
         if (product) {
-            console.log('Edit.tsx - Setting form values for product:', product.name);
             setValue('subCategoryName', product.name);
             setValue('quality', product.quality);
             setValue('weight', product.weight);
@@ -1560,8 +1493,6 @@ const SubCategoriesEdit: React.FC = () => {
             setValue('discount', product.discount.toString());
             setTypes(normalizeTypeTokens(product.type) || []);
             setPreview(product.img || defaultImg);
-        } else {
-            console.log('Edit.tsx - No product data available');
         }
     }, [product, setValue]);
 
@@ -1608,9 +1539,8 @@ const SubCategoriesEdit: React.FC = () => {
     };
 
     const onSubmit: SubmitHandler<FormInputs> = async (data) => {
-        if (!subCategoryId || subCategoryId === 'undefined') {
-            console.error('Invalid subCategoryId:', subCategoryId);
-            toast.error('Invalid sub category ID. Please try again.', {
+        if (!subCategoryId) {
+            toast.error('No sub category ID provided.', {
                 toastId: 'edit-sub-category-error',
                 position: 'top-right',
                 autoClose: 3000,
@@ -1691,17 +1621,7 @@ const SubCategoriesEdit: React.FC = () => {
                 toastId: 'edit-sub-category-success',
                 position: 'top-right',
                 autoClose: 2000,
-                onClose: () => {
-                    console.log('Edit.tsx - Success navigation, subCategoryId:', subCategoryId);
-                    if (subCategoryId && subCategoryId !== 'undefined') {
-                        console.log('Edit.tsx - Navigating to full-details with ID:', subCategoryId);
-                        navigate(`/sub/categories/full-details`, { state: { id: subCategoryId } });
-                    } else {
-                        console.log('Edit.tsx - Fallback navigation to categories list');
-                        // Fallback to main categories page if no valid ID
-                        navigate(`/sub/categories`);
-                    }
-                },
+                onClose: () => navigate(`/sub/categories`),
             });
 
         } catch (error: unknown) {
@@ -1721,19 +1641,7 @@ const SubCategoriesEdit: React.FC = () => {
         }
     };
 
-    if (loading) {
-        return (
-            <div className="text-center py-12">
-                <div className="mx-auto max-w-md">
-                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
-                    <h3 className="mt-4 text-lg font-medium text-gray-900">Loading subcategory...</h3>
-                    <p className="mt-1 text-sm text-gray-500">Please wait while we fetch the details.</p>
-                </div>
-            </div>
-        );
-    }
-
-    if (!product || !subCategoryId) {
+    if (!product && !subCategoryId) {
         return (
             <div className="text-center py-12">
                 <div className="mx-auto max-w-md">
@@ -1741,9 +1649,7 @@ const SubCategoriesEdit: React.FC = () => {
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                     </svg>
                     <h3 className="mt-2 text-lg font-medium text-gray-900">Subcategory not found</h3>
-                    <p className="mt-1 text-sm text-gray-500">
-                        {!product ? 'No subcategory data provided.' : 'Invalid subcategory ID.'}
-                    </p>
+                    <p className="mt-1 text-sm text-gray-500">The subcategory you're looking for doesn't exist.</p>
                     <div className="mt-6">
                         <button
                             onClick={() => navigate(-1)}
