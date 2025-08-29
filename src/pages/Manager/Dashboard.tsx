@@ -1,9 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import { managerService, ManagerProfile } from '../../services/managerService';
 
 const ManagerDashboard: React.FC = () => {
   const navigate = useNavigate();
   const [currentDateTime, setCurrentDateTime] = useState(new Date());
+  const [managerProfile, setManagerProfile] = useState<ManagerProfile | null>(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const timer = setInterval(() => {
@@ -12,6 +15,72 @@ const ManagerDashboard: React.FC = () => {
 
     return () => clearInterval(timer);
   }, []);
+
+  useEffect(() => {
+    const fetchManagerProfile = async () => {
+      try {
+        setLoading(true);
+        
+        // Check if we have the required authentication data
+        const accessToken = localStorage.getItem('accessToken');
+        const managerUser = localStorage.getItem('managerUser');
+        
+        console.log('🔍 Dashboard: Checking authentication data');
+        console.log('🔍 Dashboard: Access token present:', !!accessToken);
+        console.log('🔍 Dashboard: Manager user present:', !!managerUser);
+        
+        if (!accessToken || !managerUser) {
+          console.log('No authentication data found, redirecting to login');
+          localStorage.removeItem('managerUser');
+          localStorage.removeItem('accessToken');
+          navigate('/manager-login');
+          return;
+        }
+        
+        // Parse manager user to check if it's valid
+        try {
+          const parsedManagerUser = JSON.parse(managerUser);
+          console.log('🔍 Dashboard: Manager user data:', parsedManagerUser);
+          
+          if (!parsedManagerUser.role || parsedManagerUser.role !== 'manager') {
+            console.log('Invalid manager user data, redirecting to login');
+            localStorage.removeItem('managerUser');
+            localStorage.removeItem('accessToken');
+            navigate('/manager-login');
+            return;
+          }
+        } catch (parseError) {
+          console.log('Error parsing manager user data, redirecting to login');
+          localStorage.removeItem('managerUser');
+          localStorage.removeItem('accessToken');
+          navigate('/manager-login');
+          return;
+        }
+        
+        const profile = await managerService.getManagerProfile();
+        setManagerProfile(profile);
+      } catch (error: any) {
+        console.error('Failed to fetch manager profile:', error);
+        
+        // If it's an authentication error (401) or no token found, redirect to login
+        if (error.message?.includes('401') || 
+            error.message?.includes('Unauthorized') || 
+            error.message?.includes('No access token found')) {
+          localStorage.removeItem('managerUser');
+          localStorage.removeItem('accessToken');
+          navigate('/manager-login');
+          return;
+        }
+        
+        // For other errors, just log them and continue
+        // The dashboard will show with fallback text
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchManagerProfile();
+  }, [navigate]);
 
   const formatDate = (date: Date) => {
     return date.toLocaleDateString('en-US', {
@@ -31,6 +100,76 @@ const ManagerDashboard: React.FC = () => {
     });
   };
 
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-gray-50 via-blue-50 to-indigo-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-blue-600 mx-auto mb-4"></div>
+          <p className="text-gray-600">Loading manager profile...</p>
+        </div>
+      </div>
+    );
+  }
+
+  const handleRetryProfile = () => {
+    setLoading(true);
+    managerService.getManagerProfile()
+      .then(profile => {
+        setManagerProfile(profile);
+        setLoading(false);
+      })
+      .catch(error => {
+        console.error('Retry failed:', error);
+        setLoading(false);
+      });
+  };
+
+  const handleDebugAuth = () => {
+    const accessToken = localStorage.getItem('accessToken');
+    const managerUser = localStorage.getItem('managerUser');
+    
+    console.log('🔍 Debug Authentication:');
+    console.log('🔍 Access Token:', accessToken ? 'Present' : 'Missing');
+    console.log('🔍 Manager User:', managerUser ? 'Present' : 'Missing');
+    
+    if (managerUser) {
+      try {
+        const parsed = JSON.parse(managerUser);
+        console.log('🔍 Manager User Data:', parsed);
+      } catch (e) {
+        console.log('🔍 Error parsing manager user:', e);
+      }
+    }
+    
+    if (accessToken) {
+      console.log('🔍 Token length:', accessToken.length);
+      console.log('🔍 Token preview:', accessToken.substring(0, 20) + '...');
+    }
+    
+    // Test the API call directly
+    if (accessToken) {
+      console.log('🔍 Testing API call directly...');
+      fetch('http://localhost:8000/manager/profile', {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${accessToken}`,
+          'Content-Type': 'application/json'
+        }
+      })
+      .then(response => {
+        console.log('🔍 Direct API Response Status:', response.status);
+        console.log('🔍 Direct API Response Headers:', Object.fromEntries(response.headers.entries()));
+        return response.text();
+      })
+      .then(text => {
+        console.log('🔍 Direct API Response Body:', text);
+      })
+      .catch(error => {
+        console.error('🔍 Direct API Call Error:', error);
+      });
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 via-blue-50 to-indigo-50">
       {/* Header Section */}
@@ -41,7 +180,34 @@ const ManagerDashboard: React.FC = () => {
               <h1 className="text-3xl font-bold bg-gradient-to-r from-blue-600 to-indigo-700 bg-clip-text text-transparent">
                 Manager Dashboard
               </h1>
-              <p className="text-gray-600 mt-1">Priya Fresh Meats - Store Operations Control Center</p>
+              <p className="text-gray-600 mt-1">
+                {managerProfile ? (
+                  <>
+                    <span className="block text-sm font-medium text-blue-600 mt-1">
+                      Welcome, {managerProfile.firstName} {managerProfile.lastName}
+                    </span>
+                    <span className="block text-xs text-gray-500 mt-1">
+                      📱 {managerProfile.phone} | 📍 {managerProfile.location}
+                    </span>
+                  </>
+                ) : (
+                  <div className="block text-sm text-gray-500 mt-1">
+                    <span>Welcome to your dashboard</span>
+                    <button 
+                      onClick={handleRetryProfile}
+                      className="ml-2 text-blue-600 hover:text-blue-800 underline text-xs"
+                    >
+                      Retry loading profile
+                    </button>
+                    <button 
+                      onClick={handleDebugAuth}
+                      className="ml-2 text-orange-600 hover:text-orange-800 underline text-xs"
+                    >
+                      Debug Auth
+                    </button>
+                  </div>
+                )}
+              </p>
             </div>
             <div className="text-right">
               <div className="text-sm text-gray-500 mb-1">{formatDate(currentDateTime)}</div>

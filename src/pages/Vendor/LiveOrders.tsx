@@ -27,6 +27,12 @@ const LiveOrders: React.FC = () => {
 
   // Removed UI indicators for connection/debug; keep connection under the hood
   const [showQR, setShowQR] = useState<string | null>(null);
+  
+  // Store information state
+  const [storeInfo, setStoreInfo] = useState<{
+    name: string;
+    location: string;
+  } | null>(null);
 
   const socketService = SocketService.getInstance();
   
@@ -224,6 +230,59 @@ const LiveOrders: React.FC = () => {
     }
   }, [isManager]);
 
+  // Fetch store information for store users
+  const fetchStoreInfo = useCallback(async () => {
+    if (isManager) return; // Only fetch for store users
+    
+    try {
+      const storeUser = localStorage.getItem('storeUser');
+      const accessToken = localStorage.getItem('accessToken');
+      
+      if (!storeUser || !accessToken) {
+        console.log('⚠️ LiveOrders: No store user or access token found');
+        return;
+      }
+
+      // Try to get store info from localStorage first as fallback
+      try {
+        const parsedStoreUser = JSON.parse(storeUser);
+        if (parsedStoreUser.storeName || parsedStoreUser.location) {
+          setStoreInfo({
+            name: parsedStoreUser.storeName || 'Store',
+            location: parsedStoreUser.location || 'Location'
+          });
+          console.log('✅ LiveOrders: Store info loaded from localStorage:', parsedStoreUser);
+        }
+      } catch (parseError) {
+        console.log('⚠️ LiveOrders: Could not parse store user from localStorage');
+      }
+
+      // Try to fetch from API for updated information
+      const response = await fetch(`${API_CONFIG.BASE_URL}/store/profile`, {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${accessToken}`,
+          'Content-Type': 'application/json'
+        }
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        if (data.success && data.data) {
+          setStoreInfo({
+            name: data.data.name || 'Store',
+            location: data.data.location || 'Location'
+          });
+          console.log('✅ LiveOrders: Store info fetched from API:', data.data);
+        }
+      } else {
+        console.log('⚠️ LiveOrders: Failed to fetch store info from API, using localStorage fallback');
+      }
+    } catch (error) {
+      console.error('💥 LiveOrders: Error fetching store info:', error);
+    }
+  }, [isManager]);
+
   // Map backend status to frontend status
   const mapBackendStatusToFrontend = (backendStatus: string): Order['status'] => {
     switch (backendStatus) {
@@ -241,6 +300,11 @@ const LiveOrders: React.FC = () => {
         return 'new';
     }
   };
+
+  // Fetch store info when component mounts (for store users)
+  useEffect(() => {
+    fetchStoreInfo();
+  }, [fetchStoreInfo]);
 
   // Fetch orders when component mounts (for both manager and store)
   useEffect(() => {
@@ -584,17 +648,18 @@ const LiveOrders: React.FC = () => {
       {/* Header */}
       <div className="bg-gray-800 px-8 py-4 flex justify-between items-center border-b border-gray-700">
         <div className="text-xl font-semibold">
-          Priya Chicken - Indiranagar | Live Orders {isManager ? '(Manager)' : '(Store)'}
+          {isManager ? (
+            'Priya Chicken - Indiranagar | Live Orders (Manager)'
+          ) : (
+            storeInfo ? (
+              `${storeInfo.name} - ${storeInfo.location} | Live Orders (Store)`
+            ) : (
+              'Store | Live Orders (Store)'
+            )
+          )}
           <div className="text-sm text-green-400 font-normal mt-1">
             {isAuthenticated ? '📡 Connected to Backend - Real-time Data' : '🔐 Please log in to access live orders'}
           </div>
-          {/* Debug Info - Only show in development */}
-          {import.meta.env.DEV && (
-            <div className="text-xs text-yellow-400 font-normal mt-1">
-              🔍 Debug: {isManager ? 'Manager' : 'Store'} | Auth: {isAuthenticated ? 'Yes' : 'No'} | 
-              Token: {localStorage.getItem('managerUser') || localStorage.getItem('storeUser') ? 'Present' : 'Missing'}
-            </div>
-          )}
         </div>
         <div className="flex items-center space-x-4">
           {isManager && (
@@ -614,53 +679,7 @@ const LiveOrders: React.FC = () => {
             {currentTime}
           </div>
 
-          {/* Debug Button - Only show in development */}
-          {import.meta.env.DEV && (
-            <button
-              onClick={() => {
-                const managerUser = localStorage.getItem('managerUser');
-                const storeUser = localStorage.getItem('storeUser');
-                const accessToken = localStorage.getItem('accessToken');
-                console.log('🔍 Debug: Authentication Status Check');
-                console.log('🔍 Debug: Manager User:', managerUser);
-                console.log('🔍 Debug: Store User:', storeUser);
-                console.log('🔍 Debug: Access Token:', accessToken ? 'Present' : 'Missing');
-                console.log('🔍 Debug: Current Path:', window.location.pathname);
-                console.log('🔍 Debug: Is Manager:', isManager);
-                console.log('🔍 Debug: Is Authenticated:', isAuthenticated);
-                
-                if (managerUser) {
-                  try {
-                    const parsed = JSON.parse(managerUser);
-                    console.log('🔍 Debug: Parsed Manager User:', parsed);
-                    console.log('🔍 Debug: Manager Token in user object:', parsed.accessToken ? 'Present' : 'Missing');
-                  } catch (e) {
-                    console.log('🔍 Debug: Error parsing manager user:', e);
-                  }
-                }
-                
-                if (storeUser) {
-                  try {
-                    const parsed = JSON.parse(storeUser);
-                    console.log('🔍 Debug: Parsed Store User:', parsed);
-                    console.log('🔍 Debug: Store Token in user object:', parsed.accessToken ? 'Present' : 'Missing');
-                  } catch (e) {
-                    console.log('🔍 Debug: Error parsing store user:', e);
-                  }
-                }
-                
-                // Check final token resolution
-                const finalToken = accessToken || (managerUser ? JSON.parse(managerUser).accessToken : null) || 
-                                 (storeUser ? JSON.parse(storeUser).accessToken : null);
-                console.log('🔍 Debug: Final Token Resolution:', finalToken ? 'Present' : 'Missing');
-                console.log('🔍 Debug: Token Source:', accessToken ? 'accessToken' : (managerUser ? 'managerUser.accessToken' : 'storeUser.accessToken'));
-              }}
-              className="bg-yellow-600 hover:bg-yellow-700 text-white px-3 py-1 rounded text-sm font-medium transition-colors"
-              title="Debug Authentication"
-            >
-              🔍 Debug
-            </button>
-          )}
+
 
           {/* Refresh Button - Only show when authenticated */}
           {isAuthenticated && (

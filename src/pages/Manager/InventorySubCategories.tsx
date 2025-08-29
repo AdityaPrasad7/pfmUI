@@ -58,7 +58,27 @@ const InventorySubCategories: React.FC = () => {
             const res = await fetch(`${API_CONFIG.BASE_URL}${API_CONFIG.ENDPOINTS.MANAGER.INVENTORY_TYPE_CATEGORY}/${typeId}`, { headers: { 'Authorization': `Bearer ${token}` } });
             if (!res.ok) throw new Error('Failed to fetch sub categories');
             const data: ApiResponse<TypePayload> = await res.json();
-            setTypeCat(data.data || null);
+
+            // Normalize quantity per current manager so UI works with a numeric quantity
+            let currentManagerId: string | null = null;
+            try {
+                if (managerUser) {
+                    const parsed = JSON.parse(managerUser);
+                    currentManagerId = parsed?._id || parsed?.id || null;
+                }
+            } catch {}
+
+            const normalized = data.data ? {
+                ...data.data,
+                subCategories: (data.data.subCategories || []).map((p: any) => {
+                    const qArr = Array.isArray(p.quantity) ? p.quantity : [];
+                    const managerEntry = currentManagerId ? qArr.find((q: any) => String(q.managerId) === String(currentManagerId)) : null;
+                    const numericQty = managerEntry?.count ?? qArr[0]?.count ?? 0;
+                    return { ...p, quantity: numericQty } as Product;
+                })
+            } : null;
+
+            setTypeCat(normalized);
         } catch (e: any) {
             setError(e.message || 'Failed to load');
         } finally { setLoading(false); }
@@ -163,13 +183,13 @@ const InventorySubCategories: React.FC = () => {
 
                                 <div className="mt-4 flex items-center justify-between">
                                     <div className="flex items-center gap-1">
-                                        <Tooltip title="Decrease"><span><IconButton size="small" onClick={() => { const v = Math.max(0, (p.quantity || 0) - 1); setLocalQuantity(p._id, v); saveQuantity(p._id, v); }} disabled={p.quantity <= 0}><RemoveIcon /></IconButton></span></Tooltip>
-                                        <TextField size="small" type="number" value={p.quantity} onChange={(e) => { const v = Math.max(0, Number(e.target.value || 0)); setLocalQuantity(p._id, v); }} inputProps={{ min: 0, style: { width: 70, textAlign: 'center' } }} />
-                                        <Tooltip title="Increase"><IconButton size="small" onClick={() => { const v = (p.quantity || 0) + 1; setLocalQuantity(p._id, v); saveQuantity(p._id, v); }}><AddIcon /></IconButton></Tooltip>
+                                        <Tooltip title="Decrease"><span><IconButton size="small" onClick={() => { const current = Number(p.quantity) || 0; const v = Math.max(0, current - 1); setLocalQuantity(p._id, v); saveQuantity(p._id, v); }} disabled={(Number(p.quantity) || 0) <= 0}><RemoveIcon /></IconButton></span></Tooltip>
+                                        <TextField size="small" type="number" value={Number(p.quantity) || 0} onChange={(e) => { const v = Math.max(0, Number(e.target.value || 0)); setLocalQuantity(p._id, v); }} inputProps={{ min: 0, style: { width: 70, textAlign: 'center' } }} />
+                                        <Tooltip title="Increase"><IconButton size="small" onClick={() => { const current = Number(p.quantity) || 0; const v = current + 1; setLocalQuantity(p._id, v); saveQuantity(p._id, v); }}><AddIcon /></IconButton></Tooltip>
                                     </div>
                                     <div className="flex items-center gap-1">
                                         <Tooltip title="View Details"><span><IconButton size="small" color="info" onClick={() => handleViewDetails(p)}><VisibilityIcon /></IconButton></span></Tooltip>
-                                        <Tooltip title="Save"><span><IconButton size="small" color="primary" onClick={() => saveQuantity(p._id, Math.max(0, p.quantity))} disabled={saving === p._id}><SaveIcon /></IconButton></span></Tooltip>
+                                        <Tooltip title="Save"><span><IconButton size="small" color="primary" onClick={() => saveQuantity(p._id, Math.max(0, Number(p.quantity) || 0))} disabled={saving === p._id}><SaveIcon /></IconButton></span></Tooltip>
                                     </div>
                                 </div>
 
