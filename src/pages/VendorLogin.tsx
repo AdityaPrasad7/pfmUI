@@ -166,16 +166,15 @@ const StoreLogin = () => {
                   {/* </div> */}
                   <div className="flex-1 relative">
                     <input
-                        type="text"
-                        placeholder="Enter store phone number (e.g., 9876543210)"
-                        value={formData.phone}
-                        onChange={(e) => handleInputChange('phone', e.target.value)}
-                        className="block w-full pl-3 pr-3 py-2 border border-gray-300 rounded-md leading-5 bg-white placeholder-gray-500 focus:outline-none focus:placeholder-gray-400 focus:ring-1 focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                      type="text"
+                      placeholder="9876543210"
+                      value={formData.phone}
+                      onChange={(e) => handleInputChange('phone', e.target.value)}
+                      className="w-full px-4 py-3.5 border-2 border-white/30 rounded-xl focus:ring-2 focus:ring-[#fff0] focus:border-[#fff0] transition-all duration-300 pr-10 bg-white backdrop-blur-sm group-hover:bg-white group-hover:border-white/50 overflow-hi outline-none"
                     />
-                    <p className="text-xs text-gray-500 mt-1">
-                        💡 Use the store phone number (different from manager phone number).
-                    </p>
-                </div>
+                    {/* <p className="text-xs text-gray-500 mt-1">
+                    </p> */}
+                  </div>
 
                 </div>
               </div>

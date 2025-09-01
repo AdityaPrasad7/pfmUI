@@ -43,9 +43,10 @@ const SubCategoriesDisplay: React.FC = () => {
     const { id: paramId } = useParams<{ id: string }>();
     const navigate = useNavigate();
     const location = useLocation();
+    console.log("🚀 ~ SubCategoriesDisplay ~ location:", location)
     const typeId = location.state?.typeId || paramId; // This is the type ID for API calls
     const categoryId = location.state?.categoryId; // This is the category ID for navigation back
-    const id = typeId; // Keep the existing logic for API calls
+    // const id = typeId; // Keep the existing logic for API calls
 
     // Fetch sub categories from API
     useEffect(() => {
@@ -61,7 +62,7 @@ const SubCategoriesDisplay: React.FC = () => {
                 }
 
                 const response: AxiosResponse<ApiResponse<{ subCategories: SubCategory[] }>> = await callApi(
-                    `/admin/sub-product-categories/${id}`,
+                    `/admin/sub-product-categories/${typeId}`,
                     {
                         method: 'GET',
                         headers: {
@@ -95,7 +96,7 @@ const SubCategoriesDisplay: React.FC = () => {
         };
 
         fetchSubCategories();
-    }, [navigate, id]);
+    }, [navigate, typeId]);
 
     const handleMenuClick = (event: React.MouseEvent<HTMLElement>, item: SubCategory) => {
         setAnchorEl(event.currentTarget);
@@ -111,7 +112,7 @@ const SubCategoriesDisplay: React.FC = () => {
         console.log("🚀 ~ handleEdit ~ selectedItem:", selectedItem)
         if (selectedItem) {
             navigate(`/sub/categories/edit`, {
-                state: { subCategory: selectedItem, categoryId: categoryId },
+                state: { subCategory: selectedItem, typeId: typeId },
             });
         }
         handleClose();
@@ -201,7 +202,7 @@ const SubCategoriesDisplay: React.FC = () => {
                         </div>
                         <NavigateBtn
                             to={`/sub/categories/add`}
-                            state={{ categoryId: id }}
+                            state={{ typeId: typeId }}
                             label={
                                 <span className="flex items-center gap-1 w-[12rem]">
                                     <AddIcon fontSize="small" />
@@ -242,7 +243,7 @@ const SubCategoriesDisplay: React.FC = () => {
                                 className="flex items-center gap-2 text-gray-600 hover:text-gray-800 transition-colors"
                             >
                                 <ArrowBackIcon fontSize="small" />
-                                
+
                             </button>
                             <div>
                                 <h1 className="text-2xl font-bold text-gray-800">Sub Categories</h1>
@@ -251,7 +252,7 @@ const SubCategoriesDisplay: React.FC = () => {
                         </div>
                         <NavigateBtn
                             to={`/sub/categories/add`}
-                            state={{ categoryId: id }}
+                            state={{ typeId: typeId }}
                             label={
                                 <span className="flex items-center gap-1 w-[12rem]">
                                     <AddIcon fontSize="small" />
@@ -285,7 +286,7 @@ const SubCategoriesDisplay: React.FC = () => {
                             <div className="mt-6">
                                 <NavigateBtn
                                     to={`/sub/categories/add`}
-                                    state={{ categoryId: id }}
+                                    state={{ typeId: typeId }}
                                     label="Add New Sub Category"
                                     className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg shadow-sm"
                                 />
