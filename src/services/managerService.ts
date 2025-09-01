@@ -19,6 +19,7 @@ export interface ManagerProfile {
   isActive: boolean;
   lastLogin: string;
   pincode?: string;
+  img?: string;
   createdAt: string;
   updatedAt: string;
 }

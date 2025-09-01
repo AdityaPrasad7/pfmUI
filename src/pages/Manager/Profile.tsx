@@ -1,627 +1,296 @@
-import React, { useState, useRef } from "react";
+import React, { useState, useEffect } from "react";
 import profile from "../../assets/profile/young-entrepreneur.jpg";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { useNavigate } from "react-router-dom";
+import { managerService } from "../../services/managerService";
+import type { ManagerProfile } from "../../services/managerService";
+import { FiMapPin, FiPhone, FiMail, FiHome, FiUser, FiShoppingBag, FiPackage, FiTruck, FiEdit } from "react-icons/fi";
 
 interface ProfileData {
-    firstName: string;
-    lastName: string;
-    email: string;
-    location: string;
-    userLocation: string;
-    storeName: string;
-    storeLocation: string;
-    phone: string;
-    address: string;
+  firstName: string;
+  lastName: string;
+  email?: string;
+  location: string;
+  userLocation?: string;
+  storeName: string;
+  storeLocation: string;
+  phone: string;
+  address?: string;
+  pincode?: string;
 }
 
 const ManagerProfile: React.FC = () => {
-    const [activeTab, setActiveTab] = useState<"personal" | "security">("personal");
-    const [editMode, setEditMode] = useState<boolean>(false);
-    const [showPasswordFields, setShowPasswordFields] = useState<boolean>(false);
-    const [showDeleteConfirm, setShowDeleteConfirm] = useState<boolean>(false);
-    const [profileImage, setProfileImage] = useState<string>(profile);
-    const [passwordData, setPasswordData] = useState({
-        currentPassword: "",
-        newPassword: "",
-        confirmPassword: "",
-    });
-    const [deleteConfirmText, setDeleteConfirmText] = useState<string>("");
-    const fileInputRef = useRef<HTMLInputElement>(null);
+  const [profileImage, setProfileImage] = useState<string>(profile);
+  const [loading, setLoading] = useState<boolean>(true);
 
-    const [profileData, setProfileData] = useState<ProfileData>({
-        firstName: "Aditya",
-        lastName: "Tripathy",
-        email: "aditya@pfm.com",
-        location: "Bengaluru, Karnataka, India",
-        userLocation: "Koramangala, Bengaluru",
-        storeName: "Priya Fresh Meat RR Nagar",
-        storeLocation: "789 Commercial Avenue,R R Nagar, Bengaluru, Karnataka, India",
-        phone: "+91 9876543210",
-        address: "456 Business Street, Bengaluru, Karnataka, India",
-    });
+  const [profileData, setProfileData] = useState<ProfileData>({
+    firstName: "",
+    lastName: "",
+    email: "",
+    location: "",
+    userLocation: "",
+    storeName: "",
+    storeLocation: "",
+    phone: "",
+    address: "",
+    pincode: "",
+  });
 
-    const navigate = useNavigate();
+  const navigate = useNavigate();
 
-    const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const { name, value } = e.target;
-        setProfileData((prev) => ({
-            ...prev,
-            [name]: value,
-        }));
-    };
+  // Fetch manager profile data on component mount
+  useEffect(() => {
+    fetchManagerProfile();
+  }, []);
 
-    const handlePasswordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const { name, value } = e.target;
-        setPasswordData((prev) => ({
-            ...prev,
-            [name]: value,
-        }));
-    };
+  const fetchManagerProfile = async () => {
+    try {
+      setLoading(true);
+      const managerProfile: ManagerProfile = await managerService.getManagerProfile();
+      
+      // Map backend data to frontend format
+      setProfileData({
+        firstName: managerProfile.firstName || "",
+        lastName: managerProfile.lastName || "",
+        email: "", // Email not available in manager model
+        location: managerProfile.location || "",
+        userLocation: managerProfile.location || "", // Using location as userLocation
+        storeName: managerProfile.storeName || managerProfile.store?.name || "",
+        storeLocation: managerProfile.storeLocation || managerProfile.store?.location || "",
+        phone: managerProfile.phone || "",
+        address: managerProfile.location || "", // Using location as address
+        pincode: managerProfile.pincode || "",
+      });
 
-    const handleSave = () => {
-        // Validate required fields
-        if (
-            !profileData.firstName ||
-            !profileData.email ||
-            !profileData.userLocation ||
-            !profileData.storeName ||
-            !profileData.storeLocation
-        ) {
-            toast.error("Please fill in all required fields (First Name, Email, User Location, Store Name, Store Location).", {
-                position: "top-right",
-                autoClose: 3000,
-                hideProgressBar: false,
-                closeOnClick: true,
-                pauseOnHover: true,
-                draggable: true,
-            });
-            return;
-        }
-        setEditMode(false);
-        toast.success("Profile updated successfully", {
-            position: "top-right",
-            autoClose: 3000,
-            hideProgressBar: false,
-            closeOnClick: true,
-            pauseOnHover: true,
-            draggable: true,
-        });
-        console.log("Profile data saved:", profileData);
-    };
+      // Set profile image if available
+      if (managerProfile.img) {
+        setProfileImage(managerProfile.img);
+      }
+    } catch (error) {
+      console.error('Error fetching manager profile:', error);
+      toast.error("Failed to load profile data. Please try again.", {
+        position: "top-right",
+        autoClose: 3000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
 
-    const handlePasswordSave = () => {
-        if (passwordData.newPassword !== passwordData.confirmPassword) {
-            toast.error("New passwords don't match!", {
-                position: "top-right",
-                autoClose: 3000,
-                hideProgressBar: false,
-                closeOnClick: true,
-                pauseOnHover: true,
-                draggable: true,
-            });
-            return;
-        }
-        if (passwordData.newPassword.length < 8) {
-            toast.error("New password must be at least 8 characters long.", {
-                position: "top-right",
-                autoClose: 3000,
-                hideProgressBar: false,
-                closeOnClick: true,
-                pauseOnHover: true,
-                draggable: true,
-            });
-            return;
-        }
-        console.log("Password change requested:", passwordData);
-        setShowPasswordFields(false);
-        setPasswordData({
-            currentPassword: "",
-            newPassword: "",
-            confirmPassword: "",
-        });
-        toast.success("Password changed successfully", {
-            position: "top-right",
-            autoClose: 3000,
-            hideProgressBar: false,
-            closeOnClick: true,
-            pauseOnHover: true,
-            draggable: true,
-        });
-    };
-
-    const handleDeleteAccount = () => {
-        if (deleteConfirmText !== "DELETE") {
-            toast.error("Please type 'DELETE' to confirm", {
-                position: "top-right",
-                autoClose: 3000,
-                hideProgressBar: false,
-                closeOnClick: true,
-                pauseOnHover: true,
-                draggable: true,
-            });
-            return;
-        }
-        console.log("Account deletion requested");
-        setShowDeleteConfirm(false);
-        setDeleteConfirmText("");
-        toast.success("Deleted! Your ID will be removed within the next 8 hours.",
-            {
-                position: "top-right",
-                autoClose: 3000,
-                hideProgressBar: false,
-                closeOnClick: true,
-                pauseOnHover: true,
-                draggable: true,
-            });
-
-        // Redirect after 3s
-
-    };
-
-    const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        if (e.target.files && e.target.files[0]) {
-            const file = e.target.files[0];
-            if (!file.type.startsWith("image/")) {
-                toast.error("Please upload a valid image file.", {
-                    position: "top-right",
-                    autoClose: 3000,
-                    hideProgressBar: false,
-                    closeOnClick: true,
-                    pauseOnHover: true,
-                    draggable: true,
-                });
-                return;
-            }
-            if (file.size > 5 * 1024 * 1024) {
-                toast.error("Image size must be less than 5MB.", {
-                    position: "top-right",
-                    autoClose: 3000,
-                    hideProgressBar: false,
-                    closeOnClick: true,
-                    pauseOnHover: true,
-                    draggable: true,
-                });
-                return;
-            }
-            const reader = new FileReader();
-            reader.onload = (event) => {
-                if (event.target?.result) {
-                    setProfileImage(event.target.result as string);
-                    toast.success("Profile image updated successfully", {
-                        position: "top-right",
-                        autoClose: 3000,
-                        hideProgressBar: false,
-                        closeOnClick: true,
-                        pauseOnHover: true,
-                        draggable: true,
-                    });
-                }
-            };
-            reader.readAsDataURL(file);
-        }
-    };
-
-    const triggerFileInput = () => {
-        fileInputRef.current?.click();
-    };
-
+  // Show loading state
+  if (loading) {
     return (
-        <>
-            <ToastContainer />
-            <div className="max-w-6xl mx-auto p-4">
-                {/* Profile Header */}
-                <div className="bg-white rounded-lg shadow p-6 mb-6">
-                    <div className="flex flex-col md:flex-row items-center">
-                        {/* Profile Image */}
-                        <div className="relative mb-4 md:mb-0 md:mr-6">
-                            <img
-                                src={profileImage}
-                                alt="Manager Profile"
-                                className="w-32 h-32 rounded-full border-4 border-[#FFF2F2] object-cover"
-                            />
-                            {editMode && (
-                                <>
-                                    <div
-                                        onClick={triggerFileInput}
-                                        className="absolute inset-0 bg-black bg-opacity-30 rounded-full flex items-center justify-center cursor-pointer"
-                                    >
-                                        <svg
-                                            xmlns="http://www.w3.org/2000/svg"
-                                            className="h-6 w-6 text-white"
-                                            fill="none"
-                                            viewBox="0 0 24 24"
-                                            stroke="currentColor"
-                                        >
-                                            <path
-                                                strokeLinecap="round"
-                                                strokeLinejoin="round"
-                                                strokeWidth={2}
-                                                d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"
-                                            />
-                                            <path
-                                                strokeLinecap="round"
-                                                strokeLinejoin="round"
-                                                strokeWidth={2}
-                                                d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"
-                                            />
-                                        </svg>
-                                    </div>
-                                    <input
-                                        type="file"
-                                        ref={fileInputRef}
-                                        onChange={handleImageChange}
-                                        accept="image/*"
-                                        className="hidden"
-                                    />
-                                </>
-                            )}
-                        </div>
-
-                        {/* Profile Info */}
-                        <div className="flex-1 text-center md:text-left">
-                            {editMode ? (
-                                <div className="space-y-2 flex flex-col">
-                                    <input
-                                        type="text"
-                                        name="firstName"
-                                        value={profileData.firstName}
-                                        onChange={handleInputChange}
-                                        className="text-2xl font-semibold border-b border-gray-300 max-w-[15rem] focus:border-[#F47C7C] focus:outline-none text-center md:text-left"
-                                    />
-                                    {/* <input
-                                        type="email"
-                                        name="email"
-                                        value={profileData.email}
-                                        onChange={handleInputChange}
-                                        className="text-gray-500 border-b border-gray-300 max-w-[15rem] focus:border-[#F47C7C] focus:outline-none w-full text-center md:text-left"
-                                    /> */}
-                                    {/* <input
-                                        type="text"
-                                        name="location"
-                                        value={profileData.location}
-                                        onChange={handleInputChange}
-                                        className="text-gray-500 border-b border-gray-300 max-w-[15rem] focus:border-[#F47C7C] focus:outline-none w-full text-center md:text-left"
-                                    /> */}
-                                    {/* <input
-                                        type="text"
-                                        name="userLocation"
-                                        value={profileData.userLocation}
-                                        onChange={handleInputChange}
-                                        className="text-gray-500 border-b border-gray-300 max-w-[15rem] focus:border-[#F47C7C] focus:outline-none w-full text-center md:text-left"
-                                    />
-                                    <input
-                                        type="text"
-                                        name="storeName"
-                                        value={profileData.storeName}
-                                        onChange={handleInputChange}
-                                        className="text-gray-500 border-b border-gray-300 max-w-[15rem] focus:border-[#F47C7C] focus:outline-none w-full text-center md:text-left"
-                                    />
-                                    <input
-                                        type="text"
-                                        name="storeLocation"
-                                        value={profileData.storeLocation}
-                                        onChange={handleInputChange}
-                                        className="text-gray-500 border-b border-gray-300 max-w-[15rem] focus:border-[#F47C7C] focus:outline-none w-full text-center md:text-left"
-                                    /> */}
-                                </div>
-                            ) : (
-                                <>
-                                    <h1 className="text-2xl font-semibold">
-                                        {profileData.firstName} {profileData.lastName} (Manager)
-                                    </h1>
-                                    {/* <p className="text-gray-500">{profileData.email}</p> */}
-                                    {/* <p className="text-gray-500">{profileData.userLocation}</p>
-                                    <p className="text-gray-500">{profileData.storeName}</p>
-                                    <p className="text-gray-500">{profileData.storeLocation}</p> */}
-                                </>
-                            )}
-                        </div>
-
-                        {/* Edit Button */}
-                        <div className="mt-4 md:mt-0">
-                            {editMode ? (
-                                <div className="flex space-x-2">
-                                    <button
-                                        onClick={handleSave}
-                                        className="bg-[#F47C7C] text-white rounded-lg px-4 py-2 text-sm font-medium shadow hover:bg-[#EF9F9F] transition"
-                                    >
-                                        Save Changes
-                                    </button>
-                                    <button
-                                        onClick={() => setEditMode(false)}
-                                        className="bg-gray-200 rounded-lg px-4 py-2 text-sm font-medium shadow hover:bg-gray-300 transition"
-                                    >
-                                        Cancel
-                                    </button>
-                                </div>
-                            ) : (
-                                <button
-                                    onClick={() => setEditMode(true)}
-                                    className="bg-[#F47C7C] text-white rounded-lg px-4 py-2 text-sm font-medium shadow hover:bg-[#EF9F9F] transition"
-                                >
-                                    Edit Profile
-                                </button>
-                            )}
-                        </div>
-                    </div>
-                </div>
-
-                {/* Main Content */}
-                <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-                    {/* Left Column - Navigation */}
-                    <div className="md:col-span-1 bg-white rounded-lg shadow p-4">
-                        <div className="space-y-1">
-                            <button
-                                onClick={() => setActiveTab("personal")}
-                                className={`w-full text-left px-4 py-2 rounded-md ${activeTab === "personal" ? "bg-[#FFF2F2] text-[#F47C7C]" : "hover:bg-gray-100"
-                                    }`}
-                            >
-                                Personal Information
-                            </button>
-                            <button
-                                onClick={() => setActiveTab("security")}
-                                className={`w-full text-left px-4 py-2 rounded-md ${activeTab === "security" ? "bg-[#FFF2F2] text-[#F47C7C]" : "hover:bg-gray-100"
-                                    }`}
-                            >
-                                Security
-                            </button>
-                        </div>
-                    </div>
-
-                    {/* Right Column - Content */}
-                    <div className="md:col-span-3 bg-white rounded-lg shadow p-6">
-                        {activeTab === "personal" && (
-                            <>
-                                <h2 className="text-xl font-semibold mb-6 text-[#F47C7C]">Personal Information</h2>
-                                <div className="space-y-4">
-                                    {/* First Name */}
-                                    <div>
-                                        <label className="block text-sm font-medium text-gray-500 mb-1">First Name</label>
-                                        {editMode ? (
-                                            <input
-                                                type="text"
-                                                name="firstName"
-                                                value={profileData.firstName}
-                                                onChange={handleInputChange}
-                                                className="w-full border-b border-gray-300 focus:border-[#F47C7C] focus:outline-none py-1"
-                                            />
-                                        ) : (
-                                            <p className="text-gray-800">{profileData.firstName}</p>
-                                        )}
-                                    </div>
-
-                                    {/* Last Name */}
-                                    <div>
-                                        <label className="block text-sm font-medium text-gray-500 mb-1">Last Name</label>
-                                        {editMode ? (
-                                            <input
-                                                type="text"
-                                                name="lastName"
-                                                value={profileData.lastName}
-                                                onChange={handleInputChange}
-                                                className="w-full border-b border-gray-300 focus:border-[#F47C7C] focus:outline-none py-1"
-                                            />
-                                        ) : (
-                                            <p className="text-gray-800">{profileData.lastName}</p>
-                                        )}
-                                    </div>
-
-                                    {/* Email */}
-                                    <div>
-                                        <label className="block text-sm font-medium text-gray-500 mb-1">Email</label>
-                                        {editMode ? (
-                                            <input
-                                                type="email"
-                                                name="email"
-                                                value={profileData.email}
-                                                onChange={handleInputChange}
-                                                className="w-full border-b border-gray-300 focus:border-[#F47C7C] focus:outline-none py-1"
-                                            />
-                                        ) : (
-                                            <p className="text-gray-800">{profileData.email}</p>
-                                        )}
-                                    </div>
-
-                                    {/* Phone */}
-                                    <div>
-                                        <label className="block text-sm font-medium text-gray-500 mb-1">Phone</label>
-                                        {editMode ? (
-                                            <input
-                                                type="tel"
-                                                name="phone"
-                                                value={profileData.phone}
-                                                onChange={handleInputChange}
-                                                className="w-full border-b border-gray-300 focus:border-[#F47C7C] focus:outline-none py-1"
-                                            />
-                                        ) : (
-                                            <p className="text-gray-800">{profileData.phone}</p>
-                                        )}
-                                    </div>
-
-                                    {/* Address */}
-                                    <div>
-                                        <label className="block text-sm font-medium text-gray-500 mb-1">Address</label>
-                                        {editMode ? (
-                                            <input
-                                                type="text"
-                                                name="address"
-                                                value={profileData.address}
-                                                onChange={handleInputChange}
-                                                className="w-full border-b border-gray-300 focus:border-[#F47C7C] focus:outline-none py-1"
-                                            />
-                                        ) : (
-                                            <p className="text-gray-800">{profileData.address}</p>
-                                        )}
-                                    </div>
-
-
-
-                                    {/* Store Name */}
-                                    <div>
-                                        <label className="block text-sm font-medium text-gray-500 mb-1">Store Name</label>
-                                        {editMode ? (
-                                            <input
-                                                type="text"
-                                                name="storeName"
-                                                value={profileData.storeName}
-                                                onChange={handleInputChange}
-                                                className="w-full border-b border-gray-300 focus:border-[#F47C7C] focus:outline-none py-1"
-                                            />
-                                        ) : (
-                                            <p className="text-gray-800">{profileData.storeName}</p>
-                                        )}
-                                    </div>
-
-                                    {/* Store Location */}
-                                    <div>
-                                        <label className="block text-sm font-medium text-gray-500 mb-1">Store Location</label>
-                                        {editMode ? (
-                                            <input
-                                                type="text"
-                                                name="storeLocation"
-                                                value={profileData.storeLocation}
-                                                onChange={handleInputChange}
-                                                className="w-full border-b border-gray-300 focus:border-[#F47C7C] focus:outline-none py-1"
-                                            />
-                                        ) : (
-                                            <p className="text-gray-800">{profileData.storeLocation}</p>
-                                        )}
-                                    </div>
-                                </div>
-                            </>
-                        )}
-
-                        {activeTab === "security" && (
-                            <>
-                                <h2 className="text-xl font-semibold mb-6 text-[#F47C7C]">Security Settings</h2>
-                                <div className="space-y-6">
-                                    <div className="border border-gray-200 rounded-lg p-4">
-                                        <h3 className="font-medium mb-3">Change Password</h3>
-                                        {!showPasswordFields ? (
-                                            <button
-                                                onClick={() => setShowPasswordFields(true)}
-                                                className="bg-[#F47C7C] text-white rounded-md px-4 py-2 text-sm font-medium hover:bg-[#EF9F9F] transition"
-                                            >
-                                                Change Password
-                                            </button>
-                                        ) : (
-                                            <>
-                                                <div className="space-y-3">
-                                                    <div>
-                                                        <label className="block text-sm text-gray-500 mb-1">Current Password</label>
-                                                        <input
-                                                            type="password"
-                                                            name="currentPassword"
-                                                            value={passwordData.currentPassword}
-                                                            onChange={handlePasswordChange}
-                                                            className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-1 focus:ring-[#F47C7C]"
-                                                            placeholder="Enter current password"
-                                                        />
-                                                    </div>
-                                                    <div>
-                                                        <label className="block text-sm text-gray-500 mb-1">New Password</label>
-                                                        <input
-                                                            type="password"
-                                                            name="newPassword"
-                                                            value={passwordData.newPassword}
-                                                            onChange={handlePasswordChange}
-                                                            className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-1 focus:ring-[#F47C7C]"
-                                                            placeholder="Enter new password"
-                                                        />
-                                                    </div>
-                                                    <div>
-                                                        <label className="block text-sm text-gray-500 mb-1">Confirm New Password</label>
-                                                        <input
-                                                            type="password"
-                                                            name="confirmPassword"
-                                                            value={passwordData.confirmPassword}
-                                                            onChange={handlePasswordChange}
-                                                            className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-1 focus:ring-[#F47C7C]"
-                                                            placeholder="Confirm new password"
-                                                        />
-                                                    </div>
-                                                </div>
-                                                <div className="flex space-x-2 mt-4">
-                                                    <button
-                                                        onClick={handlePasswordSave}
-                                                        className="bg-[#F47C7C] text-white rounded-md px-4 py-2 text-sm font-medium hover:bg-[#EF9F9F] transition"
-                                                    >
-                                                        Update Password
-                                                    </button>
-                                                    <button
-                                                        onClick={() => {
-                                                            setShowPasswordFields(false);
-                                                            setPasswordData({
-                                                                currentPassword: "",
-                                                                newPassword: "",
-                                                                confirmPassword: "",
-                                                            });
-                                                        }}
-                                                        className="bg-gray-200 rounded-md px-4 py-2 text-sm font-medium hover:bg-gray-300 transition"
-                                                    >
-                                                        Cancel
-                                                    </button>
-                                                </div>
-                                            </>
-                                        )}
-                                    </div>
-
-                                    <div className="border border-[#FAD4D4] rounded-lg p-4 bg-[#FFF2F2]">
-                                        <h3 className="font-medium mb-3 text-[#F47C7C]">Delete Account</h3>
-                                        {!showDeleteConfirm ? (
-                                            <>
-                                                <p className="text-sm text-[#F47C7C] mb-4">
-                                                    Once you delete your manager account, there is no going back. Please be certain.
-                                                </p>
-                                                <button
-                                                    onClick={() => setShowDeleteConfirm(true)}
-                                                    className="border border-[#F47C7C] text-[#F47C7C] rounded-md px-4 py-2 text-sm font-medium hover:bg-[#F47C7C] hover:text-white transition"
-                                                >
-                                                    Delete Account
-                                                </button>
-                                            </>
-                                        ) : (
-                                            <>
-                                                <p className="text-sm text-[#F47C7C] mb-4">
-                                                    Please confirm by typing 'DELETE' to proceed with account deletion.
-                                                </p>
-                                                <input
-                                                    type="text"
-                                                    value={deleteConfirmText}
-                                                    onChange={(e) => setDeleteConfirmText(e.target.value)}
-                                                    className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-1 focus:ring-[#F47C7C] mb-4"
-                                                    placeholder="Type DELETE to confirm"
-                                                />
-                                                <div className="flex space-x-2">
-                                                    <button
-                                                        onClick={handleDeleteAccount}
-                                                        className="bg-[#F47C7C] text-white rounded-md px-4 py-2 text-sm font-medium hover:bg-[#EF9F9F] transition"
-                                                    >
-                                                        Confirm Delete
-                                                    </button>
-                                                    <button
-                                                        onClick={() => {
-                                                            setShowDeleteConfirm(false);
-                                                            setDeleteConfirmText("");
-                                                        }}
-                                                        className="bg-gray-200 rounded-md px-4 py-2 text-sm font-medium hover:bg-gray-300 transition"
-                                                    >
-                                                        Cancel
-                                                    </button>
-                                                </div>
-                                            </>
-                                        )}
-                                    </div>
-                                </div>
-                            </>
-                        )}
-                    </div>
-                </div>
-            </div>
-        </>
+      <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 flex items-center justify-center p-4">
+        <div className="bg-white rounded-xl shadow-lg p-8 max-w-md w-full">
+          <div className="flex flex-col items-center justify-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#6366F1] mb-4"></div>
+            <h3 className="text-lg font-medium text-gray-700">Loading your profile...</h3>
+            <p className="text-gray-500 mt-2">Please wait a moment</p>
+          </div>
+        </div>
+      </div>
     );
+  }
+
+  return (
+    <>
+      <ToastContainer />
+      <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 p-4 md:p-8">
+        <div className="max-w-6xl mx-auto">
+          {/* Profile Header */}
+          <div className="bg-white rounded-xl shadow-lg p-6 mb-6 overflow-hidden relative">
+            <div className="absolute top-0 right-0 h-32 w-32 bg-gradient-to-r from-[#6366F1] to-[#8B5CF6] rounded-bl-full"></div>
+            
+            <div className="flex flex-col md:flex-row items-center relative z-10">
+              {/* Profile Image */}
+              <div className="relative mb-4 md:mb-0 md:mr-8">
+                <div className="relative">
+                                     <img
+                     src={profileImage}
+                     alt="Manager Profile"
+                     className="w-32 h-32 rounded-full border-4 border-white shadow-lg object-cover"
+                   />
+                   <button className="absolute bottom-2 right-2 bg-[#6366F1] p-2 rounded-full text-white shadow-md hover:bg-[#4F46E5] transition-colors">
+                     <FiEdit size={16} />
+                   </button>
+                </div>
+              </div>
+
+              {/* Profile Info */}
+              <div className="flex-1 text-center md:text-left">
+                <h1 className="text-3xl font-bold text-gray-800">
+                  {profileData.firstName} {profileData.lastName}
+                </h1>
+                <div className="inline-flex items-center mt-1 px-3 py-1 rounded-full text-sm font-medium bg-indigo-100 text-indigo-800">
+                  Store Manager
+                </div>
+                
+                <div className="flex flex-wrap items-center mt-4 gap-4">
+                  <div className="flex items-center text-gray-600">
+                    <FiMapPin className="mr-1 text-indigo-500" />
+                    <span>{profileData.location}</span>
+                  </div>
+                  <div className="flex items-center text-gray-600">
+                    <FiPhone className="mr-1 text-indigo-500" />
+                    <span>{profileData.phone}</span>
+                  </div>
+                  {profileData.email && (
+                    <div className="flex items-center text-gray-600">
+                      <FiMail className="mr-1 text-indigo-500" />
+                      <span>{profileData.email}</span>
+                    </div>
+                  )}
+                </div>
+              </div>
+              
+
+            </div>
+          </div>
+
+          {/* Main Content */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {/* Personal Information Card */}
+            <div className="bg-white rounded-xl shadow-lg p-6 transition-all hover:shadow-xl">
+              <div className="flex items-center mb-6 pb-2 border-b border-gray-100">
+                <div className="p-2 rounded-lg bg-indigo-100 text-indigo-600 mr-3">
+                  <FiUser size={20} />
+                </div>
+                <h2 className="text-xl font-semibold text-gray-800">Personal Information</h2>
+              </div>
+              
+              <div className="space-y-5">
+                <div className="flex flex-col md:flex-row gap-4">
+                  <div className="flex-1">
+                    <label className="block text-xs font-medium text-gray-500 uppercase mb-1">First Name</label>
+                    <p className="text-gray-800 font-medium">{profileData.firstName}</p>
+                  </div>
+                  
+                  <div className="flex-1">
+                    <label className="block text-xs font-medium text-gray-500 uppercase mb-1">Last Name</label>
+                    <p className="text-gray-800 font-medium">{profileData.lastName}</p>
+                  </div>
+                </div>
+                
+                <div>
+                  <label className="block text-xs font-medium text-gray-500 uppercase mb-1">Email</label>
+                  <div className="flex items-center text-gray-800">
+                    <FiMail className="mr-2 text-indigo-500" size={16} />
+                    <span>{profileData.email || "Not available"}</span>
+                  </div>
+                </div>
+                
+                <div>
+                  <label className="block text-xs font-medium text-gray-500 uppercase mb-1">Phone</label>
+                  <div className="flex items-center text-gray-800">
+                    <FiPhone className="mr-2 text-indigo-500" size={16} />
+                    <span>{profileData.phone}</span>
+                  </div>
+                </div>
+                
+                <div>
+                  <label className="block text-xs font-medium text-gray-500 uppercase mb-1">Address</label>
+                  <div className="flex items-center text-gray-800">
+                    <FiHome className="mr-2 text-indigo-500" size={16} />
+                    <span>{profileData.location}</span>
+                  </div>
+                </div>
+                
+                <div>
+                  <label className="block text-xs font-medium text-gray-500 uppercase mb-1">Pincode</label>
+                  <p className="text-gray-800">{profileData.pincode || "Not set"}</p>
+                </div>
+              </div>
+            </div>
+            
+            {/* Store Information Card */}
+            <div className="bg-white rounded-xl shadow-lg p-6 transition-all hover:shadow-xl">
+              <div className="flex items-center mb-6 pb-2 border-b border-gray-100">
+                <div className="p-2 rounded-lg bg-purple-100 text-purple-600 mr-3">
+                  <FiShoppingBag size={20} />
+                </div>
+                <h2 className="text-xl font-semibold text-gray-800">Store Information</h2>
+              </div>
+              
+              <div className="space-y-5">
+                <div>
+                  <label className="block text-xs font-medium text-gray-500 uppercase mb-1">Store Name</label>
+                  <p className="text-gray-800 font-medium text-lg">{profileData.storeName}</p>
+                </div>
+                
+                <div>
+                  <label className="block text-xs font-medium text-gray-500 uppercase mb-1">Store Location</label>
+                  <div className="flex items-center text-gray-800">
+                    <FiMapPin className="mr-2 text-purple-500" size={16} />
+                    <span>{profileData.storeLocation}</span>
+                  </div>
+                </div>
+                
+                <div className="mt-8 p-4 bg-gray-50 rounded-lg border border-gray-100">
+                  <h3 className="font-medium text-gray-700 mb-2">Store Performance</h3>
+                  <div className="flex justify-between text-sm text-gray-600">
+                    <span>Monthly Revenue</span>
+                    <span className="font-medium text-green-600">+12.5%</span>
+                  </div>
+                  <div className="flex justify-between text-sm text-gray-600 mt-2">
+                    <span>Customer Satisfaction</span>
+                    <span className="font-medium text-green-600">94%</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+                     {/* Quick Actions Card */}
+           <div className="bg-white rounded-xl shadow-lg p-6 mt-6">
+             <h2 className="text-xl font-semibold text-gray-800 mb-4">Quick Actions</h2>
+             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+               <button 
+                 onClick={() => navigate('/manager/order-management')}
+                 className="flex flex-col items-center justify-center p-4 bg-indigo-50 rounded-lg hover:bg-indigo-100 transition-colors cursor-pointer"
+               >
+                 <div className="p-2 bg-indigo-100 rounded-full text-indigo-600 mb-2">
+                   <FiPackage size={20} />
+                 </div>
+                 <span className="text-sm font-medium text-gray-700">Order Management</span>
+               </button>
+               
+               <button 
+                 onClick={() => navigate('/manager/inventory')}
+                 className="flex flex-col items-center justify-center p-4 bg-purple-50 rounded-lg hover:bg-purple-100 transition-colors cursor-pointer"
+               >
+                 <div className="p-2 bg-purple-100 rounded-full text-purple-600 mb-2">
+                   <FiShoppingBag size={20} />
+                 </div>
+                 <span className="text-sm font-medium text-gray-700">View Inventory</span>
+               </button>
+               
+               <button 
+                 onClick={() => navigate('/manager/delivery-partner')}
+                 className="flex flex-col items-center justify-center p-4 bg-blue-50 rounded-lg hover:bg-blue-100 transition-colors cursor-pointer"
+               >
+                 <div className="p-2 bg-blue-100 rounded-full text-blue-600 mb-2">
+                   <FiTruck size={20} />
+                 </div>
+                 <span className="text-sm font-medium text-gray-700">Staff Management</span>
+               </button>
+               
+               <button className="flex flex-col items-center justify-center p-4 bg-green-50 rounded-lg hover:bg-green-100 transition-colors">
+                 <div className="p-2 bg-green-100 rounded-full text-green-600 mb-2">
+                   <FiMapPin size={20} />
+                 </div>
+                 <span className="text-sm font-medium text-gray-700">Store Analytics</span>
+               </button>
+             </div>
+           </div>
+        </div>
+      </div>
+    </>
+  );
 };
 
 export default ManagerProfile;
