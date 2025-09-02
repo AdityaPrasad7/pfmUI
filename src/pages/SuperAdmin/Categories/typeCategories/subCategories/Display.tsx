@@ -297,7 +297,7 @@ const SubCategoriesDisplay: React.FC = () => {
                     <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
                         {subCategories.map((item) => (
                             <Card key={item._id} className="relative hover:shadow-lg transition-shadow">
-                                {/* <div className="absolute top-2 right-2">
+                                <div className="absolute top-2 right-2">
                                     <IconButton
                                         aria-label="more"
                                         aria-controls={`menu-${item._id}`}
@@ -307,7 +307,7 @@ const SubCategoriesDisplay: React.FC = () => {
                                     >
                                         <MoreVertIcon />
                                     </IconButton>
-                                </div> */}
+                                </div>
                                 <Link to={"/sub/categories/full-details"} state={{ id: item.id }}>
                                     <CardContent className="flex flex-col items-center p-4">
                                         <div className="w-32 h-32 mb-4 flex items-center justify-center bg-gray-100 rounded-lg">
@@ -332,7 +332,7 @@ const SubCategoriesDisplay: React.FC = () => {
                     </div>
                 )}
 
-                {/* <Menu
+                <Menu
                     id="sub-category-menu"
                     anchorEl={anchorEl}
                     keepMounted
@@ -348,7 +348,7 @@ const SubCategoriesDisplay: React.FC = () => {
                     <MenuItem onClick={handleDelete} className="text-red-500">
                         Delete
                     </MenuItem>
-                </Menu> */}
+                </Menu>
             </div>
         </>
     );

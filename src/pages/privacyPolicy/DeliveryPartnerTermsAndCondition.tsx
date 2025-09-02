@@ -271,7 +271,7 @@ const DeliveryPartnerTermsAndCondition: React.FC = () => {
                             <h3 className="font-semibold text-amber-900 mb-2">For questions about these Terms:</h3>
                             <ul className="list-disc pl-5 text-gray-700 space-y-2">
                                 <li>
-                                    <strong>Email:</strong> delivery-support@meatexpress.com
+                                    <strong>Email:</strong> delivery-support@pfm.com
                                 </li>
                                 <li>
                                     <strong>Phone:</strong> +1 (555) 123-DLVR

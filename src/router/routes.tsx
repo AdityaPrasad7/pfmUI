@@ -11,8 +11,8 @@ import SubCategoriesAdd from '../pages/SuperAdmin/Categories/typeCategories/subC
 import SubCategoriesEdit from '../pages/SuperAdmin/Categories/typeCategories/subCategories/Edit';
 import FullDetails from '../pages/SuperAdmin/Categories/typeCategories/subCategories/FullDetails';
 import DisplayCoupons from '../pages/SuperAdmin/Coupons/Display';
-import AddCoupons from '../pages/SuperAdmin/Coupons/Add';
-import EditCoupons from '../pages/SuperAdmin/Coupons/Edit';
+// import AddCoupons from '../pages/SuperAdmin/Coupons/Add';
+// import EditCoupons from '../pages/SuperAdmin/Coupons/Edit';
 import OrderDisplay from "../pages/SuperAdmin/Order.js";
 import UserPrivacyPolicy from '../pages/privacyPolicy/UserPrivacyPolicy';
 import DeliveryPartnerPrivacyPolicy from '../pages/privacyPolicy/DeliveryPartnerPrivacyPolicy';
@@ -299,18 +299,18 @@ export const commonRoutes: AppRoute[] = [
     layout: 'default',
     role: 'super-admin',
   },
-  {
-    path: '/coupons/add',
-    element: <AddCoupons />,
-    layout: 'default',
-    role: 'super-admin',
-  },
-  {
-    path: '/coupons/edit',
-    element: <EditCoupons />,
-    layout: 'default',
-    role: 'super-admin',
-  },
+  // {
+  //   path: '/coupons/add',
+  //   element: <AddCoupons />,
+  //   layout: 'default',
+  //   role: 'super-admin',
+  // },
+  // {
+  //   path: '/coupons/edit',
+  //   element: <EditCoupons />,
+  //   layout: 'default',
+  //   role: 'super-admin',
+  // },
 
   // order 
   {
