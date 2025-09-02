@@ -14,6 +14,10 @@ import DisplayCoupons from '../pages/SuperAdmin/Coupons/Display';
 import AddCoupons from '../pages/SuperAdmin/Coupons/Add';
 import EditCoupons from '../pages/SuperAdmin/Coupons/Edit';
 import OrderDisplay from "../pages/SuperAdmin/Order.js";
+import UserPrivacyPolicy from '../pages/privacyPolicy/UserPrivacyPolicy';
+import DeliveryPartnerPrivacyPolicy from '../pages/privacyPolicy/DeliveryPartnerPrivacyPolicy';
+import UserTermsAndCondition from '../pages/privacyPolicy/UserTermsAndCondition';
+import DeliveryPartnerTermsAndCondition from '../pages/privacyPolicy/DeliveryPartnerTermsAndCondition';
 
 const DeliveryPartner = lazy(() => import('../pages/Manager/DeliveryPartner'));
 const AddPartner = lazy(() => import('../pages/Manager/DeliveryPartner/AddPartner'));
@@ -68,6 +72,28 @@ export const commonRoutes: AppRoute[] = [
     element: <StoreLogin />,
     layout: 'blank',
   },
+  // -----
+  {
+    path: '/privacy-policy',
+    element: <UserPrivacyPolicy />,
+    layout: 'blank'
+  },
+  {
+    path: '/delivery-partner/privacy-policy',
+    element: <DeliveryPartnerPrivacyPolicy />,
+    layout: 'blank'
+  },
+  {
+    path: '/terms-and-condition',
+    element: <UserTermsAndCondition />,
+    layout: 'blank'
+  },
+  {
+    path: '/delivery-partner/terms-and-condition',
+    element: <DeliveryPartnerTermsAndCondition />,
+    layout: 'blank'
+  }
+  ,
   // store role ===========================================================
   {
     path: '/store',
