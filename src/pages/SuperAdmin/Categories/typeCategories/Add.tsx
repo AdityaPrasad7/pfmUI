@@ -170,6 +170,7 @@ const TypeCategoriesAdd: React.FC = () => {
                         <h2 className="text-2xl font-bold text-gray-800">Add Type Category</h2>
                         <NavigateBtn
                             to="/type/categories"
+                            state={{ id: id }}
                             label={
                                 <>
                                     {/* Desktop / sm and up */}

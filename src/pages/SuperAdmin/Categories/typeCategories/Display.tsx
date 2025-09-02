@@ -110,7 +110,7 @@ const TypeCategoriesDisplay: React.FC = () => {
     const handleEdit = () => {
         if (selectedItem) {
             navigate(`/type/categories/edit`, {
-                state: { typeCategory: selectedItem, categoryId: id }
+                state: { typeCategory: selectedItem, id: id }
             });
         }
         handleClose();

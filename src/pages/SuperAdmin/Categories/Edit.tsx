@@ -250,6 +250,7 @@ interface FormInputs {
 const EditCategory: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const location = useLocation();
+  console.log("🚀 ~ EditCategory ~ location:", location)
   const navigate = useNavigate();
   const category = location.state?.category as CategoryItem | undefined;
   const [categoryData, setCategoryData] = useState<CategoryItem | null>(category || null);
@@ -325,7 +326,7 @@ const EditCategory: React.FC = () => {
 
       console.log('Updating category:', { id, name: data.productName, img: data.productImage?.[0] });
       const response: AxiosResponse<ApiResponse<CategoryItem>> = await callApi(
-        `/admin/product-categories/${id}`,
+        `/admin/product-categories/${category?._id}`,
         {
           method: 'PATCH',
           data: formData,

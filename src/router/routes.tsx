@@ -207,7 +207,7 @@ export const commonRoutes: AppRoute[] = [
     role: 'super-admin',
   },
   {
-    path: '/categories/edit/:id',
+    path: '/categories/edit',
     element: <CategoriesEdit />,
     layout: 'default',
     role: 'super-admin',
@@ -227,7 +227,7 @@ export const commonRoutes: AppRoute[] = [
     role: 'super-admin',
   },
   {
-    path: '/type/categories/edit/:id',
+    path: '/type/categories/edit',
     element: <TypeCategoriesEdit />,
     layout: 'default',
     role: 'super-admin',

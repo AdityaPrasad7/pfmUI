@@ -244,7 +244,7 @@ const DisplayCategories: React.FC = () => {
   const handleEdit = () => {
     if (selectedItem) {
       console.log('Navigating to edit:', selectedItem);
-      navigate(`/categories/edit/${selectedItem._id}`, {
+      navigate(`/categories/edit`, {
         state: { category: selectedItem },
       });
     }
