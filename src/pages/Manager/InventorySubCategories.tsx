@@ -5,33 +5,44 @@ import { Add as AddIcon, Remove as RemoveIcon, Save as SaveIcon, WarningAmber as
 import API_CONFIG from '../../config/api.config';
 
 interface Product {
-    _id: string; name: string; img?: string; quantity: number; price: number; discount: number; discountPrice: number; type: any; weight: string; pieces: string; serves: number; totalEnergy: number; carbohydrate: number; fat: number; protein: number; description: string; bestSellers: boolean; quality: string; createdAt: string; updatedAt: string;
+    _id: string; name: string; img?: string; quantity: number; price: number; discount: number; discountPrice: number; type: any; weight: string; pieces: string; serves: number; totalEnergy: number; carbohydrate: number; fat: number; protein: number; description: string; bestSellers: boolean; quality: string; unit: string; createdAt: string; updatedAt: string;
 }
 interface TypePayload { _id: string; name: string; subCategories: Product[] }
 interface ApiResponse<T> { statusCode: number; success: boolean; message: string; data: T; meta: any | null }
 
 const normalizeTypeTokens = (raw: any): string[] => {
-    // Accept arrays, JSON-stringified arrays, comma-separated strings, or single strings
-    try {
-        if (Array.isArray(raw)) {
-            return raw.flatMap((item) => normalizeTypeTokens(item));
+    if (!raw) return [];
+    
+    // Handle deeply corrupted strings like the one in the image
+    if (typeof raw === 'string') {
+        // Try to extract clean text from corrupted JSON strings
+        const cleanText = raw
+            .replace(/\\+/g, '') // Remove all backslashes
+            .replace(/"/g, '') // Remove all quotes
+            .replace(/\[/g, '') // Remove all opening brackets
+            .replace(/\]/g, '') // Remove all closing brackets
+            .split(',') // Split by comma
+            .map(s => s.trim()) // Trim whitespace
+            .filter(s => s.length > 0 && !s.match(/^[\[\]\\"]+$/)); // Filter out pure symbols
+        
+        if (cleanText.length > 0) {
+            return cleanText;
         }
-        if (typeof raw === 'string') {
-            const s = raw.trim();
-            if ((s.startsWith('[') && s.endsWith(']')) || (s.startsWith('"[') && s.endsWith(']"'))) {
-                const parsed = JSON.parse(s.replace(/^"|"$/g, ''));
-                return Array.isArray(parsed) ? normalizeTypeTokens(parsed) : [String(parsed)];
-            }
-            if (s.includes(',')) {
-                return s.split(',').map((t) => t.trim()).filter(Boolean);
-            }
-            return [s];
+        
+        // Fallback to JSON parsing
+        try {
+            const parsed = JSON.parse(raw);
+            return Array.isArray(parsed) ? normalizeTypeTokens(parsed) : [String(parsed)];
+        } catch {
+            return [raw];
         }
-        if (raw == null) return [];
-        return [String(raw)];
-    } catch {
-        return [String(raw)];
     }
+    
+    if (Array.isArray(raw)) {
+        return raw.flatMap((item) => normalizeTypeTokens(item));
+    }
+    
+    return [String(raw)];
 };
 
 const InventorySubCategories: React.FC = () => {
@@ -74,6 +85,7 @@ const InventorySubCategories: React.FC = () => {
                     const qArr = Array.isArray(p.quantity) ? p.quantity : [];
                     const managerEntry = currentManagerId ? qArr.find((q: any) => String(q.managerId) === String(currentManagerId)) : null;
                     const numericQty = managerEntry?.count ?? qArr[0]?.count ?? 0;
+                    console.log("🚀 ~ Product data:", p.name, "unit:", p.unit, "full product:", p);
                     return { ...p, quantity: numericQty } as Product;
                 })
             } : null;
@@ -154,7 +166,9 @@ const InventorySubCategories: React.FC = () => {
 
             <Box sx={{ display: 'grid', gap: 3, gridTemplateColumns: 'repeat(1, minmax(0, 1fr))', '@media (min-width: 640px)': { gridTemplateColumns: 'repeat(2, minmax(0, 1fr))' }, '@media (min-width: 900px)': { gridTemplateColumns: 'repeat(3, minmax(0, 1fr))' } }}>
                 {typeCat.subCategories?.map((p) => {
+                    console.log("🚀 ~ Raw type data for", p.name, ":", p.type);
                     const tokens = normalizeTypeTokens(p.type);
+                    console.log("🚀 ~ Normalized tokens for", p.name, ":", tokens);
                     const basePrice = Number(p.price) || 0;
                     const finalPrice = p.discount && basePrice > 0 
                         ? (Number(p.discountPrice) > 0 ? Number(p.discountPrice) : basePrice - (basePrice * Number(p.discount) / 100))
@@ -177,6 +191,11 @@ const InventorySubCategories: React.FC = () => {
                                             {Number(p.discount) > 0 && basePrice > finalPrice && (
                                                 <Typography variant="caption" color="textSecondary" className="line-through">₹{basePrice}</Typography>
                                             )}
+                                            <div className="mt-1">
+                                                <Typography variant="caption" color="textSecondary">
+                                                    Current: {Number(p.quantity) || 0} {p.unit || 'kg'}
+                                                </Typography>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
@@ -184,7 +203,10 @@ const InventorySubCategories: React.FC = () => {
                                 <div className="mt-4 flex items-center justify-between">
                                     <div className="flex items-center gap-1">
                                         <Tooltip title="Decrease"><span><IconButton size="small" onClick={() => { const current = Number(p.quantity) || 0; const v = Math.max(0, current - 1); setLocalQuantity(p._id, v); saveQuantity(p._id, v); }} disabled={(Number(p.quantity) || 0) <= 0}><RemoveIcon /></IconButton></span></Tooltip>
-                                        <TextField size="small" type="number" value={Number(p.quantity) || 0} onChange={(e) => { const v = Math.max(0, Number(e.target.value || 0)); setLocalQuantity(p._id, v); }} inputProps={{ min: 0, style: { width: 70, textAlign: 'center' } }} />
+                                        <div className="flex items-center gap-1">
+                                            <TextField size="small" type="number" value={Number(p.quantity) || 0} onChange={(e) => { const v = Math.max(0, Number(e.target.value || 0)); setLocalQuantity(p._id, v); }} inputProps={{ min: 0, style: { width: 60, textAlign: 'center' } }} />
+                                            <span className="text-xs text-gray-500 font-medium">{p.unit || 'kg'}</span>
+                                        </div>
                                         <Tooltip title="Increase"><IconButton size="small" onClick={() => { const current = Number(p.quantity) || 0; const v = current + 1; setLocalQuantity(p._id, v); saveQuantity(p._id, v); }}><AddIcon /></IconButton></Tooltip>
                                     </div>
                                     <div className="flex items-center gap-1">
@@ -258,14 +280,19 @@ const InventorySubCategories: React.FC = () => {
                                         </div>
 
                                         <div className="flex flex-wrap gap-2 mb-4">
-                                            {normalizeTypeTokens(selectedProduct.type).map((type, index) => (
-                                                <Chip
-                                                    key={index}
-                                                    label={type}
-                                                    variant="outlined"
-                                                    color="primary"
-                                                />
-                                            ))}
+                                            {(() => {
+                                                console.log('View dialog - Raw type data:', selectedProduct.type);
+                                                const normalized = normalizeTypeTokens(selectedProduct.type);
+                                                console.log('View dialog - Normalized types:', normalized);
+                                                return normalized.map((type, index) => (
+                                                    <Chip
+                                                        key={index}
+                                                        label={type}
+                                                        variant="outlined"
+                                                        color="primary"
+                                                    />
+                                                ));
+                                            })()}
                                         </div>
 
                                         {/* Promotional Badges */}
@@ -320,8 +347,8 @@ const InventorySubCategories: React.FC = () => {
                                             <div className="flex items-center gap-2">
                                                 <ScaleIcon color="action" />
                                                 <div>
-                                                    <Typography variant="body2" className="font-semibold">Weight</Typography>
-                                                    <Typography variant="body2" color="textSecondary">{selectedProduct.weight}</Typography>
+                                                    <Typography variant="body2" className="font-semibold">Unit</Typography>
+                                                    <Typography variant="body2" color="textSecondary">{selectedProduct.unit || 'kg'}</Typography>
                                                 </div>
                                             </div>
                                             <div className="flex items-center gap-2">

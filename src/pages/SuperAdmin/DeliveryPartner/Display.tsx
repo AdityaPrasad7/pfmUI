@@ -9,7 +9,7 @@ import {
   createColumnHelper,
   ColumnDef,
 } from "@tanstack/react-table";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { toast, ToastContainer } from "react-toastify";
 import VerifiedIcon from "@mui/icons-material/Verified";
 import PendingActionsIcon from "@mui/icons-material/PendingActions";
@@ -17,7 +17,7 @@ import ModeEditIcon from "@mui/icons-material/ModeEdit";
 import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
 import Fuse from "fuse.js";
 import "react-toastify/dist/ReactToastify.css";
-import callApi from "../../../util/admin_api"; // ✅ your axios/fetch wrapper
+import { callApi } from "../../../util/admin_api"; // ✅ your axios/fetch wrapper
 import NavigateBtn from "../../../components/button/NavigateBtn";
 import FilterListIcon from "@mui/icons-material/FilterList";
 import AddIcon from "@mui/icons-material/Add";
@@ -30,6 +30,10 @@ type DeliveryPartner = {
   phone: string;
   status: "verified" | "pending";
   overallDocumentStatus: "verified" | "pending" | "rejected";
+  store?: {
+    _id: string;
+    name: string;
+  };
 };
 
 const columnHelper = createColumnHelper<DeliveryPartner>();
@@ -40,32 +44,73 @@ const StoreStaffDisplay: React.FC = () => {
   const [statusFilter, setStatusFilter] = useState("");
   const [pagination, setPagination] = useState({ pageIndex: 0, pageSize: 5 });
   const [sorting, setSorting] = useState<{ id: string; desc: boolean }[]>([
-    { id: "_id", desc: false },
+    { id: "slNo", desc: false }, // Sort by serial number (ascending)
   ]);
+  const [isRefreshing, setIsRefreshing] = useState(false);
 
   const PAGE_SIZES = [5, 10, 20, 30, 50];
   const navigate = useNavigate();
+  const location = useLocation();
 
   // ✅ Fetch from API
-  useEffect(() => {
-    const fetchPartners = async () => {
-      try {
-        const response = await callApi("/admin/delivery-partners", { method: "GET" });
-        console.log("🚀 ~ fetchPartners ~ response:", response.data.data.deliveryPartners)
-        setData(response.data.data.deliveryPartners || []);
-      } catch (error) {
-        console.error("Error fetching delivery partners:", error);
-        toast.error("Failed to fetch delivery partners.");
+  const fetchPartners = async (showLoading = false) => {
+    try {
+      if (showLoading) setIsRefreshing(true);
+      
+      const response = await callApi({ 
+        endpoint: "/admin/delivery-partners?limit=-1", 
+        method: "GET" 
+      });
+      console.log("🚀 ~ fetchPartners ~ response:", response)
+      console.log("🚀 ~ fetchPartners ~ response.data:", response.data)
+      console.log("🚀 ~ fetchPartners ~ deliveryPartners:", response.data?.deliveryPartners)
+      
+      if (response.data?.deliveryPartners) {
+        // Keep data in original order (time-wise, as created)
+        setData(response.data.deliveryPartners);
+      } else {
+        console.warn("No deliveryPartners found in response");
+        setData([]);
       }
-    };
+    } catch (error) {
+      console.error("Error fetching delivery partners:", error);
+      toast.error("Failed to fetch delivery partners.");
+      setData([]);
+    } finally {
+      if (showLoading) setIsRefreshing(false);
+    }
+  };
+
+  useEffect(() => {
     fetchPartners();
   }, []);
+
+  // Refresh data when component becomes visible (when navigating back to page)
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+      if (!document.hidden) {
+        fetchPartners();
+      }
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+    };
+  }, []);
+
+  // Refresh data when navigating back to this page
+  useEffect(() => {
+    if (location.pathname === '/delivery-partner') {
+      fetchPartners();
+    }
+  }, [location.pathname]);
 
   // Fuzzy search
   const fuse = useMemo(
     () =>
       new Fuse(data, {
-        keys: ["_id", "name", "phone"],
+        keys: ["_id", "name", "phone", "store.name"],
         threshold: 0.3,
       }),
     [data]
@@ -99,7 +144,7 @@ const StoreStaffDisplay: React.FC = () => {
   const handleDelete = async (row: DeliveryPartner) => {
     if (window.confirm(`Are you sure you want to delete ${row.name}?`)) {
       try {
-        await callApi(`/admin/delivery-partners/${row._id}`, { method: "DELETE" });
+        await callApi({ endpoint: `/admin/delivery-partners/${row._id}`, method: "DELETE" });
         setData((prev) => prev.filter((partner) => partner._id !== row._id));
         toast.success(`${row.name} deleted successfully!`);
       } catch (error) {
@@ -117,15 +162,17 @@ const StoreStaffDisplay: React.FC = () => {
   // ✅ Define table columns
   const columns = useMemo<ColumnDef<DeliveryPartner, any>[]>(
     () => [
-      // columnHelper.accessor("_id", {
-      //   header: "ID",
-      //   cell: (info) => (
-      //     <span className="font-medium text-[#EF9F9F] hover:text-[#F47C7C] cursor-pointer">
-      //       {info.getValue()}
-      //     </span>
-      //   ),
-      //   size: 120,
-      // }),
+      {
+        id: "slNo",
+        header: "SL NO.",
+        cell: ({ row }) => (
+          <span className="font-medium text-gray-600">
+            {row.index + 1}
+          </span>
+        ),
+        size: 80,
+        enableSorting: false, // Disable sorting for serial number
+      },
       columnHelper.accessor("name", {
         header: "Name",
         cell: (info) => (
@@ -133,11 +180,23 @@ const StoreStaffDisplay: React.FC = () => {
         ),
         size: 200,
       }),
-      columnHelper.accessor("phone", {
-        header: "Phone",
-        cell: (info) => <span className="text-gray-600">{info.getValue()}</span>,
-        size: 180,
-      }),
+             columnHelper.accessor("phone", {
+         header: "Phone",
+         cell: (info) => <span className="text-gray-600">{info.getValue()}</span>,
+         size: 180,
+       }),
+       columnHelper.accessor("store", {
+         header: "Store Name",
+         cell: (info) => {
+           const store = info.getValue();
+           return (
+             <span className="text-gray-700 font-medium">
+               {store?.name || "No Store Assigned"}
+             </span>
+           );
+         },
+         size: 200,
+       }),
       columnHelper.accessor("status", {
         header: "Status",
         cell: (info) => {
@@ -213,19 +272,37 @@ const StoreStaffDisplay: React.FC = () => {
         {/* Header Section */}
         <div className="mb-8">
           <div className="flex flex-col sm:flex-row md:items-center items-end sm:justify-between gap-5">
-            <div className='w-full'>
-              <h2 className="text-2xl font-bold text-gray-800">Delivery Partner</h2>
-            </div>
-            <NavigateBtn
-              to="/delivery-partner/add"
-              label={
-                <span className="flex items-center gap-1 min-w-[8rem]">
-                  <AddIcon fontSize="small" />
-                  <span>Add New Staff</span>
-                </span>
-              }
-              className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg shadow-sm hover:shadow-md transition-all"
-            />
+                         <div className='w-full'>
+               <h2 className="text-2xl font-bold text-gray-800">Delivery Partner</h2>
+             </div>
+             <div className="flex items-center gap-3">
+               <button
+                 onClick={() => fetchPartners(true)}
+                 disabled={isRefreshing}
+                 className="inline-flex items-center gap-1 px-3 py-2 border border-gray-300 rounded text-sm text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                 title="Refresh data"
+               >
+                 <svg 
+                   className={`w-4 h-4 ${isRefreshing ? 'animate-spin' : ''}`} 
+                   fill="none" 
+                   stroke="currentColor" 
+                   viewBox="0 0 24 24"
+                 >
+                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                 </svg>
+                 <span>{isRefreshing ? 'Refreshing...' : 'Refresh'}</span>
+               </button>
+               <NavigateBtn
+                 to="/delivery-partner/add"
+                 label={
+                   <span className="flex items-center gap-1 min-w-[8rem]">
+                     <AddIcon fontSize="small" />
+                     <span>Add New Staff</span>
+                   </span>
+                 }
+                 className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg shadow-sm hover:shadow-md transition-all"
+               />
+             </div>
           </div>
         </div>
 
@@ -237,13 +314,13 @@ const StoreStaffDisplay: React.FC = () => {
               <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                 <SearchIcon className="text-gray-400" style={{ fontSize: '1.2rem' }} />
               </div>
-              <input
-                type="text"
-                placeholder="Search staff by ID, name or store..."
-                value={globalFilter}
-                onChange={(e) => setGlobalFilter(e.target.value)}
-                className="pl-10 pr-4 py-2.5 w-full border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition placeholder-gray-400"
-              />
+                             <input
+                 type="text"
+                 placeholder="Search by name, phone, or store..."
+                 value={globalFilter}
+                 onChange={(e) => setGlobalFilter(e.target.value)}
+                 className="pl-10 pr-4 py-2.5 w-full border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition placeholder-gray-400"
+               />
             </div>
             <div className="relative w-full sm:w-48">
               <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">

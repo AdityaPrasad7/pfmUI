@@ -186,7 +186,7 @@ import SubmitButton from '../../../components/button/SubmitBtn';
 import { toast, ToastContainer } from 'react-toastify';
 import { useNavigate } from 'react-router-dom';
 import ClearIcon from '@mui/icons-material/Clear';
-import callApi from '../../../util/admin_api';
+import { callApi } from '../../../util/admin_api';
 
 interface FormInputs {
   name: string;
@@ -221,7 +221,7 @@ const StoreStaffAdd: React.FC = () => {
     const fetchStores = async () => {
       try {
         setLoadingStores(true);
-        const response = await callApi("/admin/all-store-name", { method: "GET" });
+        const response = await callApi({ endpoint: "/admin/all-store-name", method: "GET" });
 
         // Handle different possible response structures
         let storesData: Store[] = [];
@@ -255,7 +255,8 @@ const StoreStaffAdd: React.FC = () => {
       console.log('Form Data:', data);
 
       // Call API to add delivery partner
-      await callApi("/admin/delivery-partners", {
+      await callApi({
+        endpoint: "/admin/delivery-partners",
         method: "POST",
         data: data
       });
